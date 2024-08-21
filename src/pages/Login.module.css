@@ -1,0 +1,38 @@
+.container{
+    background-color: #fff;
+    margin: 0 auto;
+    width: 619px;
+    height: 496px;
+    display: grid;
+    grid-template-rows: auto auto auto auto;
+    place-content: center;
+    
+
+}
+
+.daddy{
+    background-color: #f7f7f7;
+    height: 100vh;
+    display: grid;
+    align-items: center;
+
+}
+
+.button{
+    background-color: red;
+    width: 100%;
+    text-transform:uppercase;
+    background-color: #5145E4;
+    color: #fff;
+    height: 58px;
+    border-radius: 5px;
+}
+
+.imagem{
+    width: 10rem;
+    margin: 0 auto;
+}
+
+.form{
+    width: 30rem;
+}

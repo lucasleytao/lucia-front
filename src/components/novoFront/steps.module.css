@@ -1,0 +1,17 @@
+.temas::after{
+    content: "";
+    position: relative;
+    height: 20px;
+    width: 1px;
+    left: 20px;
+    background-color: rgb(192, 192, 192);
+}
+
+.temas>div{
+    border: 1px solid #00000042;
+}
+
+.paragrafo{
+    font-size: 1.2rem;
+   }
+   

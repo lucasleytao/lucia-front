@@ -1,0 +1,47 @@
+table {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  border-collapse: collapse;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+  margin: 16px 0;
+}
+
+p {
+  margin: 16px 0;
+  display: block;
+}
+
+.container {
+  padding: 16px;
+  box-sizing: border-box;
+}

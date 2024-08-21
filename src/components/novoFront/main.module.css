@@ -1,0 +1,8 @@
+.main{
+    display: flex;   
+}
+
+.flexGrow{
+    flex-grow: 1;
+    padding: 2rem;
+}

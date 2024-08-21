@@ -1,0 +1,10 @@
+.disabled{
+    background-color: black;
+}
+
+
+
+.progress{
+    position:absolute;
+    right:5rem;
+}

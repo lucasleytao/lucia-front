@@ -1,0 +1,379 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Reset CSS */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    font-family: "Inter", sans-serif;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+body{
+  background-color: #fffefd;
+}
+
+
+@layer base {
+  .dark {
+    --background: 225 9% 9%;
+    --foreground: 210 40% 98%;
+
+    --card: 228 9% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 228 9% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 252 100% 69%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 228 6% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 228 6% 16%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 228 6% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 228 6% 16%;
+    --input: 228 6% 16%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+  }
+} 
+.borda-bottom{
+  border-bottom: 0.5px solid rgba(0, 0 ,0, 0.3);
+}
+
+.borda-topo{
+  border-top: 0.5px solid rgba(0, 0 ,0, 0.3);
+}
+
+
+.container {
+  margin: 0 auto; 
+  max-width: 33rem; 
+
+  
+}
+
+.cardGrid {
+  display: grid;
+  grid-gap: 0.5rem;
+  align-items: center; 
+  justify-content: center; 
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+  max-width: 1000;
+}
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+  min-height: 80px;
+  width: 100%; 
+}
+
+
+
+#chat3 .form-control {
+  border-color: transparent;
+}
+
+#chat3 .form-control:focus {
+  border-color: transparent;
+  box-shadow: inset 0px 0px 0px 1px transparent;
+}
+
+.badge-dot {
+  border-radius: 50%;
+  height: 10px;
+  width: 10px;
+  margin-left: 2.9rem;
+  margin-top: -0.75rem;
+}
+
+/* ChatComponent.css */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  max-width: 600px;
+  margin: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  max-width: 80%;
+}
+
+.message.user {
+  align-self: flex-end;
+  background-color: #0b93f6;
+}
+
+.message.bot {
+  align-self: flex-start;
+  background-color: #e5e5ea;
+  color: black;
+}
+
+.input-container {
+  display: flex;
+  padding: 10px;
+}
+
+.input-message {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
+
+.send-button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: #0b93f6;
+  color: white;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.input-message:focus, .send-button:focus {
+  outline: none;
+}
+
+.navbar {
+  width: 100%;
+  background-color: #f0f2f5; 
+}
+
+.nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding: 0 20px;
+}
+
+.logo .brand-font {
+  color: #1890ff; 
+}
+
+.leftMenu, .rightMenu {
+  display: none; 
+}
+
+@media (min-width: 768px) {
+  .leftMenu, .rightMenu {
+    display: block; 
+  }
+}
+
+.dots span {
+  animation: typingDots 1.5s infinite step-start;
+  opacity: 0;
+}
+
+.dots span:nth-child(1) { animation-delay: 0s; }
+.dots span:nth-child(2) { animation-delay: 0.5s; }
+.dots span:nth-child(3) { animation-delay: 1s; }
+
+@keyframes typingDots {
+  0%, 100% {
+      opacity: 0;
+  }
+  50% {
+      opacity: 1;
+  }
+}
+
+
+.register {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background-color: #141828;
+  color: #9BA5B5;
+}
+
+@media (max-width: 768px) {
+  .register {
+    grid-template-columns: 1fr; /* Empilha verticalmente */
+  }
+}
+
+.formulario {
+  background-position: bottom;
+  background-size: cover;
+  background-image: url("../public/heroRegister.jpg");
+  height: 100vh;
+}
+
+.form-data {
+  display: grid;
+  width: 100%; /* Ajusta a largura para ser mais flexível */
+  max-width: 400px; /* Reduz a largura máxima */
+  margin: 0 auto;
+  color: #9BA5B5;
+  padding: 0 20px;
+  gap: 20px;
+}
+
+.hero {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.hero > h1 {
+  position: relative;
+  display: inline-block;
+}
+
+.form-data input, .form-data button {
+  display: block;
+  width: 100%;
+  height: 40px; /* Aumenta a altura para melhor toque */
+  background: #23283D;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, .1);
+  border-radius: 6px;
+  font-size: 16px;
+  color: #fff;
+}
+
+.form-data h1 {
+  font-weight: 600;
+  font-size: 26px;
+  word-spacing: .3rem;
+  color: #EBEEF3;
+}
+
+.form-data p {
+  color: #63636B;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 200%;
+}
+
+.logotipo {
+  display: flex;
+  align-items: center;
+}
+
+.logotipo img {
+  width: 25px;
+}
+
+.form-data button {
+  background-image: linear-gradient(to top, #2B7AFB 0%, #2174FD 90%, #213BFD 100%);
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+  cursor: pointer;
+  font-size: 14px; /* Aumenta a fonte para legibilidade */
+  line-height: 150%;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+@media(max-width:600px){
+  .formulario {
+    background-position: bottom;
+    background-size: cover;
+    background-image: url("../public/heroRegister.jpg");
+    display: none;
+    height: 100vh;
+  }
+}
+
+.linkhome{
+  font-weight:600;
+  text-decoration: underline;
+  color: #fff;
+
+}
+
+.formulario {
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 22, 45, 0.9), rgba(255, 255, 255, 0));
+  z-index: 1;
+}
+
+.form-data {
+  position: relative;
+  z-index: 2;
+}

@@ -1,0 +1,14 @@
+.container{
+    border: 1px solid #6c757d;
+    padding: 1rem;
+    min-height: 200px;
+}
+
+.muted{
+    color: #6c757d; /* Cor cinza */
+    opacity: 0.8; 
+}
+
+.inputs{
+    margin-bottom: 1rem;
+}

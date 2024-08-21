@@ -1,0 +1,15 @@
+.header{
+
+    background-image: url("../../public/Group\ 1.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    border-radius: 5px 5px 0px 0px;
+}
+
+.container{
+    max-width: 500px;
+    margin: 0 auto;
+    width: 700px;
+    padding-top: 2rem;
+}
