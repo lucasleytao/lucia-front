@@ -1,19 +1,19 @@
-.side {
+/* .side {
     height: 100vh;
-    width: 250px; /* Define a largura do sidebar */
-    position: fixed; /* Fixa a posição na tela */
+    width: 250px; 
+    position: fixed; 
     top: 0;
     left: 0;
     background-color: #0C4A6E;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding-top: 1rem; /* Espaçamento superior para o conteúdo */
+    padding-top: 1rem; 
 }
 
 .nav {
     display: flex;
-    flex-direction: column; /* Organiza os links em uma coluna */
+    flex-direction: column; 
     width: 90%;
     background-color: #0C4A6E;
     padding: 1rem;
@@ -34,4 +34,52 @@
     font-size:larger;
     color: black;
 }
+ */
 
+ /* NOVO SIDE */
+
+ .side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 200px;
+    background-color: #343a40;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  
+  .nav {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .navItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: x-large; /*tamanho do 'inicio'*/
+    color: #fff;
+  }
+
+  /* ícone */
+  
+  .navIcon {
+    margin-right: 50px;
+    color: #fff;
+  }
+  
+  .brand {
+    font-size: 2rem;
+  }
+  
+  .fontSizeLarge {
+    font-size: 1.5rem;
+    margin-top: auto; /* Garante que o link Sair fique no final */
+  }
+  
+  

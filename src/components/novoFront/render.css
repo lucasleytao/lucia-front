@@ -1,0 +1,35 @@
+/* BOTÕES */
+
+.btn-help {
+    background-color: #346EE0;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+    transition: 0.2s ease;
+}
+
+.btn-help:hover {
+    background-color: rgb(182, 97, 216); /* Cor mais escura no hover */
+}
+
+.btn-steps {
+    background-color: #20B799;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.btn-steps:hover {
+    background-color: rgb(182, 97, 216); /* Cor mais escura no hover */
+}
+
+.btn-edit {
+    background-color: #346EE0;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.btn-edit:hover {
+    background-color: rgb(182, 97, 216); /* Cor mais escura no hover */
+}

@@ -1,8 +1,25 @@
-.main{
+/* .main{
     display: flex;   
 }
 
 .flexGrow{
     flex-grow: 1;
     padding: 2rem;
-}
+} */
+
+.main {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .flexGrow {
+    flex-grow: 1;
+    padding-left: 30px; /* Ajuste para corresponder à largura do Side */
+    padding-right: 30px; /* Adicione um padding à direita para evitar que o conteúdo fique colado à borda */
+    padding-top: 20px; /* Adicione um padding no topo para dar espaço entre o conteúdo e o topo */
+    padding-bottom: 20px; /* Adicione um padding na parte inferior para espaçamento adicional */
+    overflow-y: auto; /* Permite rolar o conteúdo, se necessário */
+    box-sizing: border-box; /* Garante que o padding seja incluído na largura total do elemento */
+  }
+  
+  
