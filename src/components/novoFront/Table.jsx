@@ -1,23 +1,23 @@
+// // grid de ideias
+
 // import React, { useState } from 'react';
 // import Table from 'react-bootstrap/Table';
 // import api from '../../services/api';
 // import { useAuth } from '../../context/useAuth';
 // import Form from 'react-bootstrap/Form';
 // import MyVerticallyCenteredModal from './MyVerticallyCenteredModal';
-// import { LucideDelete,EditIcon,PlayCircle } from 'lucide-react';
-// import {styles} from "./table.module.css";
 // import { useStepList } from '../../context/StepListContext';
 // import { useNavigate } from 'react-router-dom';
-// import { Button, Flex, Tooltip } from 'antd';
+// import SweetAlert from "react-bootstrap-sweetalert";
 
 // const IdeiasTable = ({ ideias, fetchIdeias }) => {
 //   const navigate = useNavigate();
-//   const {temas,currentStep,setCurrentStep,ideia,setIdeia}= useStepList()
+//   const { setIdeia } = useStepList();
 //   const { state } = useAuth();
 //   const { token } = state;
-//   console.log(token)
 //   const [formData, setFormData] = useState({ id: "", title: "", description: "" });
 //   const [modalShow, setModalShow] = useState(false);
+//   const [confirm, setConfirm] = useState(false);
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
@@ -55,17 +55,16 @@
 
 //   const handlePlayIdea = (id, title, description) => {
 //     setIdeia({ id, title, description });
-//     navigate("/home/component2")
+//     navigate("/home/component2");
 //   };
 
 //   const handleSaveChanges = async () => {
 //     try {
-//       console.log("dentro do edit", token, formData.id, formData.title, formData.description);
 //       const response = await api.put(
 //         `/ideas`,
 //         { id_idea: formData.id, title: formData.title, description: formData.description },
 //         {
-//           headers:{
+//           headers: {
 //             Authorization: `Bearer ${token}`
 //           }
 //         }
@@ -93,12 +92,13 @@
 //             <tr key={index}>
 //               <td>{index + 1}</td>
 //               <td>{ideia.title}</td>
-//               <td className="text-muted">{truncateText(ideia.description,50) }</td>
-//               <td style={{display:"flex",gap:"3rem",minHeight:"50px"}}>
-//                 <Button  icon={<LucideDelete />} onClick={() => handleDeleteIdea(ideia.id)}>Deletar</Button>
-//                 <Button icon={<EditIcon/>} onClick={() => handleEditIdea(ideia.id, ideia.title, ideia.description)}>Editar</Button>
-//                 <Button icon={<PlayCircle/>} onClick={() => handlePlayIdea(ideia.id, ideia.title, ideia.description)}>Continuar</Button>
-
+//               <td className="text-muted">{truncateText(ideia.description, 50)}</td>
+//               <td>
+//                 <div>
+//                   <button type="button" className="btn btn-primary btn-sm me-2" onClick={() => handlePlayIdea(ideia.id, ideia.title, ideia.description)}><i class="fa-solid fa-arrow-right"></i> Continuar</button>
+//                   <button type="button" className="btn btn-outline-success btn-sm me-2" onClick={() => handleEditIdea(ideia.id, ideia.title, ideia.description)}><i class="fa-solid fa-pen"></i> Editar</button>
+//                   <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleDeleteIdea(ideia.id)}><i class="fa-solid fa-trash-can"></i> Excluir</button>
+//                 </div>
 //               </td>
 //             </tr>
 //           ))}
@@ -125,7 +125,6 @@
 //               value={formData.description}
 //             />
 //           </Form.Group>
-
 //         </Form>
 //       </MyVerticallyCenteredModal>
 //     </>
@@ -142,6 +141,7 @@ import Form from 'react-bootstrap/Form';
 import MyVerticallyCenteredModal from './MyVerticallyCenteredModal';
 import { useStepList } from '../../context/StepListContext';
 import { useNavigate } from 'react-router-dom';
+import SweetAlert from "react-bootstrap-sweetalert";
 
 const IdeiasTable = ({ ideias, fetchIdeias }) => {
   const navigate = useNavigate();
@@ -150,6 +150,8 @@ const IdeiasTable = ({ ideias, fetchIdeias }) => {
   const { token } = state;
   const [formData, setFormData] = useState({ id: "", title: "", description: "" });
   const [modalShow, setModalShow] = useState(false);
+  const [confirmar, setConfirmar] = useState(false);
+  const [confirmarId, setConfirmarId] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -166,15 +168,21 @@ const IdeiasTable = ({ ideias, fetchIdeias }) => {
     return text;
   };
 
-  const handleDeleteIdea = async (id) => {
+  const confirmDeleteIdea = (id) => {
+    setConfirmarId(id);
+    setConfirmar(true);
+  };
+
+  const handleDeleteIdea = async () => {
     try {
       await api.delete(`/ideas`, {
         headers: {
           Authorization: `Bearer ${token}`
         },
-        data: { idIdea: id }
+        data: { idIdea: confirmarId }
       });
       fetchIdeias();
+      setConfirmar(false);
     } catch (error) {
       console.error('Erro ao deletar ideia:', error);
     }
@@ -192,7 +200,7 @@ const IdeiasTable = ({ ideias, fetchIdeias }) => {
 
   const handleSaveChanges = async () => {
     try {
-      const response = await api.put(
+      await api.put(
         `/ideas`,
         { id_idea: formData.id, title: formData.title, description: formData.description },
         {
@@ -221,31 +229,54 @@ const IdeiasTable = ({ ideias, fetchIdeias }) => {
         </thead>
         <tbody>
           {ideias.map((ideia, index) => (
-            // <tr key={index}>
-            //   <td>{index + 1}</td>
-            //   <td>{ideia.title}</td>
-            //   <td className="text-muted">{truncateText(ideia.description, 50)}</td>
-            //   <td>
-            //     <button type="button" class="btn btn-danger" onClick={() => handleDeleteIdea(ideia.id)}>Deletar</button>
-            //     <button type="button" class="btn btn-warning" onClick={() => handleEditIdea(ideia.id, ideia.title, ideia.description)}>Editar</button>
-            //     <button type="button" class="btn btn-success" onClick={() => handlePlayIdea(ideia.id, ideia.title, ideia.description)}>Vamos lá</button>
-            //   </td>
-            // </tr>
             <tr key={index}>
               <td>{index + 1}</td>
               <td>{ideia.title}</td>
               <td className="text-muted">{truncateText(ideia.description, 50)}</td>
               <td>
                 <div>
-                  <button type="button" className="btn btn-primary btn-sm me-2" onClick={() => handlePlayIdea(ideia.id, ideia.title, ideia.description)}><i class="fa-solid fa-arrow-right"></i> Continuar</button>
-                  <button type="button" className="btn btn-outline-success btn-sm me-2" onClick={() => handleEditIdea(ideia.id, ideia.title, ideia.description)}><i class="fa-solid fa-pen"></i> Editar</button>
-                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleDeleteIdea(ideia.id)}><i class="fa-solid fa-trash-can"></i> Excluir</button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary btn-sm me-2" 
+                    onClick={() => handlePlayIdea(ideia.id, ideia.title, ideia.description)}
+                  >
+                    <i className="fa-solid fa-arrow-right"></i> Continuar
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-success btn-sm me-2" 
+                    onClick={() => handleEditIdea(ideia.id, ideia.title, ideia.description)}
+                  >
+                    <i className="fa-solid fa-pen"></i> Editar
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-danger btn-sm" 
+                    onClick={() => confirmDeleteIdea(ideia.id)}
+                  >
+                    <i className="fa-solid fa-trash-can"></i> Excluir
+                  </button>
                 </div>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
+
+      <SweetAlert
+        warning
+        showCancel
+        confirmBtnText="Sim, excluir!"
+        confirmBtnBsStyle="danger"
+        cancelBtnText="Cancelar"
+        cancelBtnBsStyle="light"
+        title="Confirme sua ação"
+        onConfirm={handleDeleteIdea}
+        onCancel={() => setConfirmar(false)}
+        show={confirmar}
+      >
+        Deseja realmente excluir esta ideia?
+      </SweetAlert>
 
       <MyVerticallyCenteredModal addIdeia={handleSaveChanges} textButton="SALVAR IDEIA" show={modalShow} onHide={() => setModalShow(false)}>
         <Form>

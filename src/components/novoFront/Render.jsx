@@ -452,14 +452,19 @@ const Render = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <div>
+        <NavLink to="/home/component2">
+          <Button variant='outline-danger' size='lg' style={{ marginBottom: "1rem", marginLeft: "1rem" }}><i className="fa-solid fa-delete-left"></i> Voltar</Button>
+        </NavLink>
         <h1>Passo {currentStep.id}: {currentStep.title}</h1>
         <p className={`${styles.paragrafo}`}>{currentStep.desc}</p>
         <div style={{ display: "flex", justifyContent: "start" }}>
           <PaginationComponent />
         </div>
+        <button type="button" className="btn btn-warning btn-sm me-2" onClick={getOldResponses}><i class="fa-solid fa-list-check"></i> Respostas</button>
       </div>
       <div className={styles.container}>
         <h5>{ideia ? `${ideia.title}` : " "}</h5>
+
         <div style={{ display: "flex", gap: "2rem" }}>
           {/* <ButtonGroup vertical>
             <button type="button" className="btn btn-primary" onClick={() => handleButtonClick(description)}>Descrição</button>
@@ -477,7 +482,7 @@ const Render = () => {
               <button
                 key={button.key}
                 type="button"
-                className={`btn ${activeButton === button.key ? 'btn-secondary' : 'btn-primary'}`} // Aplica a cor cinza quando o botão está ativo
+                className={`btn ${activeButton === button.key ? 'btn-info' : 'btn-primary'}`} // Aplica a cor cinza quando o botão está ativo
                 onClick={() => handleButtonClick(eval(button.key), button.key)}
               >
                 {button.label}
@@ -494,10 +499,7 @@ const Render = () => {
           </div>
         </div>
       </div>
-      <div className="p-3 d-flex justify-content-between btn-conf">
-        <NavLink to="/home/component2">
-          <Button variant='outline-danger' size='lg' style={{ marginBottom: "1rem", marginLeft: "1rem" }}><i className="fa-solid fa-delete-left"></i> Voltar</Button>
-        </NavLink>
+      <div className="p-3 d-flex justify-content-end btn-conf">
         <div>
           <button type="button" className="btn btn-primary me-3 btn-lg" onClick={helpMe} disabled={loading}><i class="fa-regular fa-message"></i>
             {loading ? <Spinner animation="border" /> : ' Me Ajude, Lucia'}
@@ -505,7 +507,7 @@ const Render = () => {
           <button type="button" className="btn btn-success me-3 btn-md" onClick={() => setModalShow2(true)}><i class="fa-regular fa-square-check"></i>
             {loading2 ? <Spinner animation="border" /> : " Atividade do Passo"}
           </button>
-          <button type="button" className="btn btn-warning btn-md" onClick={getOldResponses}><i class="fa-solid fa-list-check"></i> Respostas</button>
+
         </div>
       </div>
 

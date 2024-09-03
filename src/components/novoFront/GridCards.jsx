@@ -33,7 +33,7 @@ const GridCards = ({ temas, selectedCards, toggleCardSelection, loading, }) => {
             <Button variant='primary' size='lg' style={{ marginBottom: "1rem" }}><i className="fa-solid fa-arrow-right"></i> Continuar</Button>
           </NavLink>
           <NavLink to="/home/component1">
-          <Button variant='outline-danger' size='md' style={{ marginBottom: "1rem", marginLeft: "1rem" }}><i class="fa-solid fa-delete-left"></i> Voltar</Button>
+          <Button variant='outline-danger' size='lg' style={{ marginBottom: "1rem", marginLeft: "1rem" }}><i class="fa-solid fa-delete-left"></i> Voltar</Button>
           </NavLink>
         </div>
         {/* <Progress type="circle" strokeColor={twoColors} percent={arredondar(progress, 0)} size={80} style={{ marginRight: "1rem" }} className={`${styles.progress}`} /> */}
