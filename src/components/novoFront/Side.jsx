@@ -14,15 +14,14 @@ const Side = () => {
       <Nav className={styles.nav} defaultActiveKey="/">
         <Nav.Item className={styles.navItem}>
           <i class="fa-solid fa-code-branch"></i>
-          {/* <i class="fa-solid fa-link"></i> */}
-          {/* <i class="fa-solid fa-boxes-stacked"></i> */}
           <Nav.Link as={Link} to="component1" style={{ color: '#fff' }} className={styles.navLink}>Ideias</Nav.Link>
         </Nav.Item>
         <Nav.Item className={styles.navItem}>
-          {/* <Nav.Link as={Link} to="assistente">Assistente</Nav.Link> */}
         </Nav.Item>
       </Nav>
+
       <Navbar.Brand as={Link} className={`${styles.brand}`} to="/"><i class="fa-solid fa-right-from-bracket"></i> Sair</Navbar.Brand>
+      
     </Navbar>
   );
 }

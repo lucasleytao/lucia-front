@@ -15,8 +15,6 @@ const PaginationComponent = () => {
 
   return (
     <Pagination>
-       {/*<Pagination.First  />
-      <Pagination.Prev />*/ }
 
       {temas.map((tema, index) => (
         <Pagination.Item
@@ -29,9 +27,6 @@ const PaginationComponent = () => {
         </Pagination.Item>
       ))}
 
-     
-      {/* <Pagination.Next />
-      <Pagination.Last /> */}
     </Pagination>
   );
 };

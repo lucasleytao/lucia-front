@@ -28,7 +28,6 @@ const Content = () => {
     }));
   };
 
-
   const addIdea = async () => {
     try {
       await api.post('/ideas', formData, {
@@ -65,17 +64,14 @@ const Content = () => {
     }
   }, [token]);
 
-
-
   return (
     <div className={styles.flexGrow}>
       <div>
         <h3>Olá, {name}!</h3>
         <p className={`${styles.paragrafo}`}>Quer registrar uma nova ideia?</p>
         <div className={styles.container}>
-          <div style={{ display: "flex", placeContent: "space-between"}}>
+          <div style={{ display: "flex", placeContent: "space-between" }}>
             <div >
-              {/* <h3 className="text-secondary text-xs font-weight-normal">Sua Biblioteca de Idéias</h3> */}
               <p>Sua biblioteca de ideias</p>
             </div>
             <button type='button' className='btn btn-primary' onClick={() => setModalShow(true)}>Nova Ideia</button>
@@ -84,7 +80,6 @@ const Content = () => {
 
         </div>
 
-        {/* <p className={`${styles.paragrafo}`}>Me conta a ideia que você tem que eu te guio pelos 24 passos.</p> */}
         <MyVerticallyCenteredModal title="Quero saber mais..." textButton="ADICIONAR IDEIA" addIdeia={addIdea} show={modalShow} onHide={() => setModalShow(false)} >
           <Form>
             <Form.Group className="mb-3" controlId="formGroupTitle">
@@ -105,17 +100,9 @@ const Content = () => {
                 value={formData.description}
               />
             </Form.Group>
-
           </Form>
         </MyVerticallyCenteredModal>
       </div>
-      {/*<div className={`${styles.container} ${styles.assistentItem}`}>
-        <h5  className={`text-secondary text-xs font-weight-normal ${styles.tituloMedio}` }>Não tem ideia?</h5>
-        <p className={`text-secondary ${styles.paragrafo}`}>Vamos conversar para que possamos achar algo que faça sentido para você em conjunto.</p>
-        <NavLink to="/home/assistente">
-          <Button className={styles.button} variant='primary'>Assistente</Button>
-        </NavLink>
-      </div>*/}
     </div>
   );
 };

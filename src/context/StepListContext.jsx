@@ -33,8 +33,6 @@ export const StepListProvider = ({ children }) => {
     { id: 24, title: "Análise de Resultados e Iteração", color: "danger", tema: "Testes", desc: "Analise os resultados e itere continuamente para melhorar seu produto ou serviço." ,description:"",objective:"",instructions:"",exercise:"" }
 ];
 
-    
-
     const [progress,setProgress] = useState(null)
     const [render,setRender] = useState()
 
