@@ -1,0 +1,3577 @@
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\App.js ###
+
+import React from 'react';
+import { BrowserRouter as Router, Route,Routes} from 'react-router-dom';
+import Login from './pages/Login';
+import Main from './components/novoFront/Main';
+import Register from './pages/Register';
+
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route exact path="/"  element={<Login />}/>
+        <Route exact path="/home/*" element={<Main />}/>
+        <Route exact path="/register" element={<Register />}/>
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\CardGen.jsx ###
+
+import React, { useState } from 'react';
+import { Card, Button, Modal } from 'antd';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faX, faEdit } from '@fortawesome/free-solid-svg-icons';
+
+
+const CardGen = ({ titulo, descricao }) => {
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  // Better handling for descricaoTruncada
+  const descricaoTruncada = descricao && descricao.length > 50 ? descricao.substring(0, 47) + '...' : descricao;
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const handleOk = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setOpen(false);
+    }, 3000); 
+  };
+
+  const handleCancel = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+     
+      <Card
+        className="text-lg"
+        style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}
+        title={<span style={{ fontSize: '18px' }}>{titulo}</span>} // Slightly larger text for better readability
+        size="small"
+      >
+        <div className="flex items-center justify-center gap-4">
+          <p style={{ fontSize: "16px", color: "gray" }}>{descricaoTruncada}</p>
+          <div className='flex gap-2'>
+            <button className='flex items-center justify-center' style={{border:"1px solid", width:"12px", height:"12px", borderRadius:"50%", display: "flex"}}>
+              <FontAwesomeIcon icon={faX} style={{ fontSize: '12px', color: 'black' }}/>
+            </button>
+            <button className='flex items-center justify-center' style={{border:"1px solid", width:"12px", height:"12px", borderRadius:"50%", display: "flex"}} onClick={showModal}>
+              <FontAwesomeIcon icon={faEdit} style={{ fontSize: '12px', color: 'black' }}/>
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Modal */}
+      <Modal
+        open={open}
+        title="Edit Item"
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Return
+          </Button>,
+          <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+            Submit
+          </Button>,
+        ]}
+      >
+        <p>Edit your item details here.</p>
+      </Modal>
+    </div>
+  );
+};
+
+export default CardGen;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\header\TypingAnimation.js ###
+
+import React from 'react'
+
+const TypingAnimation = () => {
+    return (
+        <Typography variant="body1" style={{ display: 'flex', alignItems: 'center' }}>
+            Carregando
+            <span className="dots">
+                <span>.</span><span>.</span><span>.</span>
+            </span>
+        </Typography>
+    );
+}
+
+export default TypingAnimation
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Card\Card.jsx ###
+
+import React from 'react';
+import { Card as BootstrapCard } from 'react-bootstrap';
+import styles from "./Card.module.css";
+import { LockKeyhole } from 'lucide-react';
+import Spinner from 'react-bootstrap/Spinner';
+
+const Card = ({ onClick,bg, key, color, header,functionOnclick, title, children,isDisabled,loading,...props }) => {
+  return (
+    <BootstrapCard
+   onClick={functionOnclick}
+        {...props}
+      bg={bg}
+      key={key}
+      text={color}
+      style={{ width: '18rem',cursor:isDisabled?"default":"pointer",height:"250px"}}
+      className={`mb-2 ${color}`}
+    >
+      <BootstrapCard.Header style={{width:"100%",textAlign:"center"}}>{header}</BootstrapCard.Header>
+      <BootstrapCard.Body>
+        <BootstrapCard.Title>{title}</BootstrapCard.Title>
+        {loading?<Spinner animation="border" style={{ position: 'absolute', top: '10px', right: '10px'}} />:(isDisabled && (
+          <div style={{ position: 'absolute', top: '10px', right: '10px', color: '#6c757d' }}>
+            <LockKeyhole />
+          </div>
+        ))}
+        
+        <BootstrapCard.Text>
+          {children}
+        </BootstrapCard.Text>
+      </BootstrapCard.Body> 
+    </BootstrapCard>
+  );
+}
+
+export default Card;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Content.jsx ###
+
+import React, { useEffect, useState } from 'react';
+import Button from 'react-bootstrap/Button';
+import MyVerticallyCenteredModal from './MyVerticallyCenteredModal';
+import styles from "./render.module.css";
+import IdeiasTable from "./Table";
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/useAuth';
+import api from '../../services/api';
+import Form from 'react-bootstrap/Form';
+import { useStepList } from '../../context/StepListContext';
+import Spinner from 'react-bootstrap/Spinner';
+
+const Content = () => {
+  const { state } = useAuth();
+  console.log("state: ", state)
+  const { temas, currentStep, setCurrentStep, ideia, setIdeia } = useStepList()
+  const [ideiasList, setIdeiasList] = useState([]);
+  const [name, setName] = useState(state ? state.first_name : 'Usuário Desconhecido');
+  const [formData, setFormData] = useState({ title: "", description: "" });
+  const token = state ? state.token : '';
+  const [loading, setLoading] = useState(false);
+  const [modalShow, setModalShow] = useState(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const addIdea = async () => {
+    try {
+      await api.post('/ideas', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      fetchIdeas();
+      setFormData({ title: "", description: "" });
+      setModalShow(false);
+    } catch (error) {
+      console.error('Erro ao adicionar ideia:', error);
+    }
+  };
+
+  const fetchIdeas = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/ideas', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setLoading(false)
+      setIdeiasList(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar ideias:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchIdeas();
+    }
+  }, [token]);
+
+  return (
+    <div className={styles.flexGrow}>
+      <div>
+        <h3>Olá, {name}!</h3>
+        <p className={`${styles.paragrafo}`}>Quer registrar uma nova ideia?</p>
+        <div className={styles.container}>
+          <div style={{ display: "flex", placeContent: "space-between" }}>
+            <div >
+              <p>Sua biblioteca de ideias</p>
+            </div>
+            <button type='button' className='btn btn-primary' onClick={() => setModalShow(true)}>Nova Ideia</button>
+          </div>
+          {loading ? <span style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "150px" }}><Spinner animation="border" /></span> : <IdeiasTable ideias={ideiasList} fetchIdeias={fetchIdeas} className={styles.Table} />}
+
+        </div>
+
+        <MyVerticallyCenteredModal title="Quero saber mais..." textButton="ADICIONAR IDEIA" addIdeia={addIdea} show={modalShow} onHide={() => setModalShow(false)} >
+          <Form>
+            <Form.Group className="mb-3" controlId="formGroupTitle">
+              <Form.Label>Qual nome você quer dar para a sua ideia?</Form.Label>
+              <Form.Control
+                type="text"
+                name="title"
+                onChange={handleChange}
+                value={formData.title}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formGroupDescription">
+              <Form.Label>Descreva sua ideia em poucas palavras</Form.Label>
+              <Form.Control
+                type="text"
+                name="description"
+                onChange={handleChange}
+                value={formData.description}
+              />
+            </Form.Group>
+          </Form>
+        </MyVerticallyCenteredModal>
+      </div>
+    </div>
+  );
+};
+
+export default Content;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\content1.module.css ###
+
+.container{
+    border: 1px solid #6c757d;
+    padding: 1rem;
+    min-height: 200px;
+}
+.flexGrow{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    justify-content:space-between;
+}
+
+.assistentItem{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+}
+
+.assistentItem>.button{
+    grid-column: 2;
+    grid-row: span 2;
+    width: 100px;
+    justify-self: left;
+
+}
+
+.assistentItem>p{
+    grid-column: 1;
+    max-width:max-content;
+}
+.paragrafo{
+ font-size: 1.2rem;
+}
+
+.tituloMedio{
+    font-size: 1rem;
+}
+
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Content2.jsx ###
+
+import React, { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import GridCards from './GridCards';
+import Render from './Render';
+import { useStepList } from '../../context/StepListContext';
+import api from '../../services/api';
+import { Progress } from 'antd';
+import styles from "./steps.module.css";
+import { useAuth } from '../../context/useAuth';
+
+const Content2 = () => {
+  const { dispatch, state } = useAuth();
+  const { temas, currentStep, setCurrentStep, ideia, progress, setProgress, render } = useStepList();
+  const { token } = state;
+  const [loading, setLoading] = useState(false);
+  const [renderState, setRenderState] = useState(render);
+  const [name, setName] = useState(state ? state.first_name : 'Usuário Desconhecido');
+
+  // Atualiza o estado de renderização quando o valor muda
+  useEffect(() => {
+    setRenderState(render);
+  }, [render]);
+
+  // Atualiza o progresso do passo e outras informações de estado
+  useEffect(() => {
+    checkStep(ideia.id);
+  }, [ideia]);
+
+  // Checa o passo atual da ideia
+  const checkStep = async (ideiaId) => {
+    try {
+      setLoading(true);
+      const response = await api.post(`checkstep/${ideiaId}`, {}, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      setProgress(response.data.data[0].step);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Formata os temas para exibição
+  const temasFormated = temas.reduce((acc, current) => {
+    const exists = acc.find(item => item.tema === current.tema);
+    if (!exists) {
+      return acc.concat([{ tema: current.tema, color: current.color }]);
+    } else {
+      return acc;
+    }
+  }, []);
+
+  // Manipula a seleção de cartões
+  const toggleCardSelection = (id) => {
+    const selectedTema = temas.find(tema => tema.id === id);
+    setCurrentStep(selectedTema);
+  };
+
+  // Calcula o progresso arredondado
+  function arredondar(progress, casa) {
+    const percent = ((progress + 1) / 24) * 100;
+    const factor = Math.pow(10, casa);
+    return Math.round(percent * factor) / factor;
+  }
+
+  return (
+    <div style={{ height: "50vh" }}>
+      <div>
+        <div>
+          <h1>Sua ideia é: {`${ideia.title}`}</h1>
+        </div>
+        <br />
+        <div>
+          <h5><i class="fa-brands fa-space-awesome"> </i> Vamos aos 24 passos do Empreendedor Disciplinado</h5><br />
+          <div style={{ display: "flex", gap: "1rem", alignContent: "center" }}>
+            {renderState ?
+              temasFormated.map((item, index) => (
+                <div key={item.tema} className={`${styles.temas}`} style={{ display: "flex", alignContent: "center", justifyContent: "center", gap: ".5rem", padding: "1rem" }}>
+                  <p>{item.tema}</p>
+                  <div className={`bg-${item.color}`} style={{ height: "20px", width: "40px" }}></div>
+                </div>
+              ))
+              :
+              <Progress percent={arredondar(progress, 0)} status="active" strokeColor={{ from: '#108ee9', to: '#87d068' }} />
+            }
+          </div><br />
+        </div>
+      </div>
+      <Routes>
+        <Route path='/' element={<GridCards temas={temas} loading={loading} selectedCards={[currentStep.id]} toggleCardSelection={toggleCardSelection} />} />
+        <Route path='/render' element={<Render />} />
+      </Routes>
+    </div>
+  );
+};
+
+export default Content2;
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Content3.jsx ###
+
+import React, { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import GridCards from './GridCards';
+import Render from './Render';
+import { useStepList } from '../../context/StepListContext';
+import api from '../../services/api';
+import { Progress } from 'antd';
+import styles from "./steps.module.css";
+import { useAuth } from '../../context/useAuth';
+
+const Content3 = () => {
+  const { dispatch, state } = useAuth();
+  const { temas, currentStep, setCurrentStep, ideia, progress, setProgress, render } = useStepList();
+  const { token } = state;
+  const [loading, setLoading] = useState(false);
+  const [renderState, setRenderState] = useState(render);
+  const [name, setName] = useState(state ? state.first_name : 'Usuário Desconhecido');
+
+  // Atualiza o estado de renderização quando o valor muda
+  useEffect(() => {
+    setRenderState(render);
+  }, [render]);
+
+  // Atualiza o progresso do passo e outras informações de estado
+  useEffect(() => {
+    checkStep(ideia.id);
+  }, [ideia]);
+
+  // Checa o passo atual da ideia
+  const checkStep = async (ideiaId) => {
+    try {
+      setLoading(true);
+      const response = await api.post(`checkstep/${ideiaId}`, {}, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      setProgress(response.data.data[0].step);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Formata os temas para exibição
+  const temasFormated = temas.reduce((acc, current) => {
+    const exists = acc.find(item => item.tema === current.tema);
+    if (!exists) {
+      return acc.concat([{ tema: current.tema, color: current.color }]);
+    } else {
+      return acc;
+    }
+  }, []);
+
+  // Manipula a seleção de cartões
+  const toggleCardSelection = (id) => {
+    const selectedTema = temas.find(tema => tema.id === id);
+    setCurrentStep(selectedTema);
+  };
+
+  // Calcula o progresso arredondado
+  function arredondar(progress, casa) {
+    const percent = ((progress + 1) / 24) * 100;
+    const factor = Math.pow(10, casa);
+    return Math.round(percent * factor) / factor;
+  }
+
+  return (
+    <div style={{ height: "50vh" }}>
+      <Routes>
+        <Route path='/render' element={<Render />} />
+      </Routes>
+    </div>
+  );
+};
+
+export default Content3;
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\disable.module.css ###
+
+.disabled{
+    background-color: black;
+}
+
+.progress{
+    position:absolute;
+    right:5rem;
+}
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\GridCards.jsx ###
+
+import React, { useEffect } from 'react';
+import Card from './Card/Card';
+import styles from "./disable.module.css";
+import { useStepList } from '../../context/StepListContext';
+import { Button } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
+import { Progress } from 'antd';
+
+const twoColors = {
+  '0%': '#108ee9',
+  '100%': '#87d068',
+};
+const GridCards = ({ temas, selectedCards, toggleCardSelection, loading, }) => {
+
+  const { progress, render, setRender } = useStepList();
+
+  useEffect(() => { setRender(true) }, [])
+
+  function arredondar(progress, casa) {
+    const percent = ((progress + 1) / 24) * 100;
+    const factor = Math.pow(10, casa)
+    return Math.round(percent * factor) / factor
+
+  }
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }} className={`${styles.container}`}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <NavLink to="render">
+            <Button variant='primary' size='lg' style={{ marginBottom: "1rem" }}><i className="fa-solid fa-arrow-right"></i> Continuar</Button>
+          </NavLink>
+          <NavLink to="/home/component1">
+          <Button variant='outline-danger' size='lg' style={{ marginBottom: "1rem", marginLeft: "1rem" }}><i class="fa-solid fa-delete-left"></i> Voltar</Button>
+          </NavLink>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: "1rem", maxWidth: "100vw", flexWrap: "wrap", maxHeight: "700px", overflowY: "scroll" }}>
+
+        {temas.map((tema, index) => (
+          <Card
+            loading={loading}
+            functionOnclick={index <= progress ? () => toggleCardSelection(tema.id) : null}
+            key={tema.id}
+            bg={selectedCards.includes(tema.id) ? `${tema.color}` : 'light'}
+            color={selectedCards.includes(tema.id) ? 'light' : `${tema.color}`}
+            header={`Passo ${index + 1}`}
+            title={tema.title}
+            isDisabled={index > progress}
+
+            className={index > progress ? `${styles.disabled}` : ''}
+            text={index > progress ? 'muted' : ''}
+
+          >
+
+            {tema.desc}
+
+          </Card>
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default GridCards;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Main.jsx ###
+
+import React from 'react';
+import Side from "./Side";
+import { Route,Routes } from 'react-router-dom';
+import styles from "./main.module.css";
+import Content from './Content';
+import Content2 from './Content2';
+import Content3 from './Content3';
+import Inicial from '../../pages/Inicial';
+import { StepListProvider} from '../../context/StepListContext';
+
+// * wildcar: 'caminho coringa' que captura todas as sub-rotas ou caminhos apos o prefixo
+
+const Main = () => {
+  return ( 
+        
+      <div className={`${styles.main}`}>
+    <Side />
+    <div className={`${styles.flexGrow}`} >
+      <StepListProvider>
+    <Routes>
+    <Route path="assistente"  element={<Inicial />} />
+    <Route path="component1"  element={<Content  />} />
+    <Route path="component2/*"  element={<Content2 />} />
+    <Route path="component3/*" element={<Content3  />} />
+    </Routes>
+    </StepListProvider>
+    </div>
+    </div> 
+   
+);
+};
+
+export default Main;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\main.module.css ###
+
+.main {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .flexGrow {
+    flex-grow: 1;
+    padding-left: 30px; /* Ajuste para corresponder à largura do Side */
+    padding-right: 30px; /* Adicione um padding à direita para evitar que o conteúdo fique colado à borda */
+    padding-top: 20px; /* Adicione um padding no topo para dar espaço entre o conteúdo e o topo */
+    padding-bottom: 20px; /* Adicione um padding na parte inferior para espaçamento adicional */
+    overflow-y: auto; /* Permite rolar o conteúdo, se necessário */
+    box-sizing: border-box; /* Garante que o padding seja incluído na largura total do elemento */
+  }
+  
+  
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\ModalFullScreen.css ###
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #0C4A6E;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    padding: 1rem;
+}
+
+table th, table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #0C4A6E;
+    color: white;
+    font-weight: bold;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #0A4564;
+}
+
+table tbody tr:hover {
+    background-color: #083A50;
+}
+
+table tbody tr td a {
+    color: #FFD700;
+    text-decoration: none;
+}
+
+table tbody tr td a:hover {
+    text-decoration: underline;
+}
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\ModalFullScreen.jsx ###
+
+import React, { useRef,useState} from 'react';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { useAuth } from '../../context/useAuth';
+import './ModalFullScreen.css';
+import { Refresh } from '@mui/icons-material';
+import api from '../../services/api';
+import { useStepList } from '../../context/StepListContext';
+import Spinner from 'react-bootstrap/Spinner';
+function ModalFullScreen({ setContent,showState, setShowState, content, step,numeroParaPalavra}) {
+  const targetRef = useRef();
+  const [hover, setHover] = useState(false);
+  const { state } = useAuth();
+  const { token } = state;
+  const [loading,setLoading] = useState(false)
+  const { temas, currentStep, ideia, progress, setProgress, nextStep, setRender } = useStepList();
+  const handleDownload = async () => {
+    const input = targetRef.current;
+    const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210; // Largura da imagem em mm (A4: 210mm x 297mm)
+    const pageHeight = 295; // Altura da página em mm (A4: 210mm x 297mm)
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`exercicio-passo${step}.pdf`);
+  };
+  const helpMe = async () => {
+    setLoading(true);
+    try {
+      const response = await api.post(`passo/${numeroParaPalavra[currentStep.id]}`, {
+        idIdea: ideia.id,
+        passoAtual: currentStep.id,
+        title: ideia.title,
+        forceOpenAI:true,
+        description: ideia.description
+      }, { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
+      setContent(response.data.response);
+    } catch (error) {
+      console.error('Erro ao consultar a API:', error.message);
+    } finally {
+      setLoading(false);
+      
+    }
+  };
+  return (
+    <Modal show={showState} fullscreen={true} onHide={() => setShowState(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title style={{ display: 'flex', justifyContent: 'space-between', paddingRight: '4rem', width: '100vw' }}>
+          <span style={{color:"#83adb5"}}>LucIAf</span>
+          <Refresh
+          onClick={helpMe}
+      style={{ color: hover ? '#ff0000' : '#83adb5',cursor: hover ? "pointer": "auto" }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    />
+          <Button variant="success" onClick={handleDownload}>Download PDF</Button>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div ref={targetRef} className="container">
+       
+      {loading ? <span style={{height:"100vh",display:"flex",justifyContent:"center",alignItems:"center"}}> <Spinner animation="border" /></span>  :  (<ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>)}
+    
+          <div style={{ height: '20px' }} />
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+export default ModalFullScreen;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\MyVerticallyCenteredModal.jsx ###
+
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+
+function MyVerticallyCenteredModal({addIdeia,textButton,children,title,...props}) {
+  return (
+    <Modal
+      {...props}
+      size="lg"
+      aria-labelledby="contained-modal-title-vcenter"
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title id="contained-modal-title-vcenter">
+          {title}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {children}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={addIdeia}>{textButton}</Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
+export default MyVerticallyCenteredModal;
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\PageInicial.jsx ###
+
+import React from 'react'
+
+function PageInicial() {
+  return (
+    <div>PageInicial</div>
+  )
+}
+
+export default PageInicial
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\PaginationComponent.jsx ###
+
+import React, { useEffect } from 'react';
+import Pagination from 'react-bootstrap/Pagination';
+import { useStepList } from '../../context/StepListContext';
+
+const PaginationComponent = () => {
+  const { temas, currentStep, setCurrentStep, nextStep, previousStep,progress } = useStepList();
+
+  const handleSetCurrentStep = (step) => {
+    setCurrentStep(temas[step - 1]);
+  };
+
+  useEffect(()=>{
+    console.log("progresso mudou")
+  },[progress])
+
+  return (
+    <Pagination>
+
+      {temas.map((tema, index) => (
+        <Pagination.Item
+          key={tema.id}
+          disabled={index>progress}
+          active={tema.id === currentStep.id}
+          onClick={() => handleSetCurrentStep(tema.id)}
+        >
+          {index + 1}
+        </Pagination.Item>
+      ))}
+
+    </Pagination>
+  );
+};
+
+export default PaginationComponent;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\render.css ###
+
+/* BOTÕES */
+
+.btn-help {
+    background-color: #346EE0;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+    transition: 0.2s ease;
+}
+
+.btn-help:hover {
+    background-color: rgb(182, 97, 216); /* Cor mais escura no hover */
+}
+
+.btn-steps {
+    background-color: #20B799;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.btn-steps:hover {
+    background-color: rgb(182, 97, 216); /* Cor mais escura no hover */
+}
+
+.btn-edit {
+    background-color: #346EE0;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.btn-edit:hover {
+    background-color: rgb(182, 97, 216); /* Cor mais escura no hover */
+}
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Render.jsx ###
+
+import React, { useEffect, useState } from 'react';
+import PaginationComponent from './PaginationComponent';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Fade from 'react-bootstrap/Fade';
+import styles from "./render.module.css";
+import { useStepList } from '../../context/StepListContext';
+import ModalFullScreen from './ModalFullScreen';
+import { useAuth } from '../../context/useAuth';
+import api from '../../services/api';
+import Spinner from 'react-bootstrap/Spinner';
+import MyVerticallyCenteredModal from './MyVerticallyCenteredModal';
+import Form from 'react-bootstrap/Form';
+import { Button } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
+import "./render.css";
+
+const numeroParaPalavra = {
+  1: "um", 2: "dois", 3: "tres", 4: "quatro", 5: "cinco",
+  6: "seis", 7: "sete", 8: "oito", 9: "nove", 10: "dez",
+  11: "onze", 12: "doze", 13: "treze", 14: "quatorze", 15: "quinze",
+  16: "dezesseis", 17: "dezessete", 18: "dezoito", 19: "dezenove",
+  20: "vinte", 21: "vinteeum", 22: "vinteedois", 23: "vinteetres", 24: "vinteequatro"
+};
+
+const Render = () => {
+  const [text, setText] = useState('');
+  const [open, setOpen] = useState(true);
+  const { temas, currentStep, ideia, progress, setProgress, nextStep, setRender } = useStepList();
+  const [show, setShow] = useState(false);
+  const { state } = useAuth();
+  const { token } = state;
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loading2, setLoading2] = useState(false);
+  const [description, setDescription] = useState(null);
+  const [objective, setObjective] = useState(null);
+  const [instructions, setInstructions] = useState(null);
+  const [exercise, setExercise] = useState(null);
+  const [modalShow, setModalShow] = useState(false);
+  const [modalShow2, setModalShow2] = useState(false);
+  const [formData, setFormData] = useState({ title: "", description: "" });
+  const [formData2, setFormData2] = useState({ conclusao: "" });
+  const [modalShow3, setModalShow3] = useState(false);
+  const [responses, setResponses] = useState([]);
+  const [changedResponses, setChangedResponses] = useState([]);
+  const [activeButton, setActiveButton] = useState('description'); // Novo estado para o botão ativo
+
+  const checkStep = async (ideiaId) => {
+    try {
+      const response = await api.post(`checkstep/${ideiaId}`, {}, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      setProgress(response.data.data[0].step);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const tema = temas[currentStep.id - 1];
+    setDescription(tema.description);
+    setObjective(tema.objective);
+    setExercise(tema.exercise);
+    setInstructions(tema.instructions);
+    handleButtonClick(tema.description);
+  }, [currentStep, temas]);
+
+  useEffect(() => {
+    setRender(false);
+  }, []);
+
+  const helpMe = async () => {
+    setLoading(true);
+    try {
+      const response = await api.post(`passo/${numeroParaPalavra[currentStep.id]}`, {
+        idIdea: ideia.id,
+        passoAtual: currentStep.id,
+        title: ideia.title,
+        description: ideia.description
+      }, { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
+      setContent(response.data.response);
+    } catch (error) {
+      console.error('Erro ao consultar a API:', error.message);
+    } finally {
+      setLoading(false);
+      setShow(true);
+    }
+  };
+
+  const handleButtonClick = (newText, buttonType) => {
+    setActiveButton(buttonType); // Definir o botão ativo
+    setOpen(false);
+    setTimeout(() => {
+      setText(newText);
+      setOpen(true);
+    }, 300);
+  };
+
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  const handleChange2 = (e, index, id, label) => {
+    const { name, value } = e.target;
+    setFormData2(prevState => ({ ...prevState, [name]: value }));
+    setChangedResponses(prevState => {
+      const newResponses = [...prevState];
+      newResponses[index] = { ...newResponses[index], response: `${label}:${value}`, id };
+      return newResponses;
+    });
+  };
+
+  const getOldResponses = async () => {
+    try {
+      const response = await api.post('getOldResponses', { ideaId: ideia.id }, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      setResponses(response.data.respostas);
+      setModalShow3(true);
+    } catch (error) {
+      console.error("Error fetching old responses", error.message);
+    }
+  };
+
+  const updateResponses = async () => {
+    try {
+      setModalShow3(false);
+      await api.put('updateResponse', { changedResponses }, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      setChangedResponses([]);
+    } catch (error) {
+      console.error("Error updating responses", error.message);
+    }
+  };
+
+  useEffect(() => {
+    console.log(changedResponses);
+  }, [changedResponses]);
+
+  const handleSubmitResponse = async () => {
+    setLoading2(true);
+    try {
+      await api.post("userresponse", {
+        ideaId: ideia.id,
+        step: currentStep.id,
+        response: `${currentStep.title}:${formData2.conclusao}`
+      }, { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
+      checkStep(ideia.id);
+      setModalShow2(false);
+      nextStep();
+      setFormData2({ conclusao: "" });
+    } catch (error) {
+      console.error('Erro ao enviar resposta:', error.message);
+    } finally {
+      setLoading2(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+      <div>
+        <NavLink to="/home/component2">
+          <Button variant='outline-danger' size='lg' style={{ marginBottom: "1rem", marginLeft: "1rem" }}><i className="fa-solid fa-delete-left"></i> Voltar</Button>
+        </NavLink>
+        <h1>Passo {currentStep.id}: {currentStep.title}</h1>
+        <p className={`${styles.paragrafo}`}>{currentStep.desc}</p>
+        <div style={{ display: "flex", justifyContent: "start" }}>
+          <PaginationComponent />
+        </div>
+        <button type="button" className="btn btn-warning btn-sm me-2" onClick={getOldResponses}><i class="fa-solid fa-list-check"></i> Respostas</button>
+      </div>
+      <div className={styles.container}>
+        <h5>{ideia ? `${ideia.title}` : " "}</h5>
+
+        <div style={{ display: "flex", gap: "2rem" }}>
+          <ButtonGroup vertical>
+            {[
+              { key: 'description', label: 'Descrição' },
+              { key: 'objective', label: 'Objetivo' },
+              { key: 'instructions', label: 'Instruções' },
+              { key: 'exercise', label: 'Atividade' }
+            ].map((button) => (
+              <button
+                key={button.key}
+                type="button"
+                className={`btn ${activeButton === button.key ? 'btn-info' : 'btn-primary'}`} // Aplica a cor cinza quando o botão está ativo
+                onClick={() => handleButtonClick(eval(button.key), button.key)}
+              >
+                {button.label}
+              </button>
+            ))}
+          </ButtonGroup>
+
+          <div>
+            <Fade in={open}>
+              <div style={{ width: "700px", fontSize: "1.3rem" }}>{text}</div>
+            </Fade>
+          </div>
+        </div>
+      </div>
+      <div className="p-3 d-flex justify-content-end btn-conf">
+        <div>
+          <button type="button" className="btn btn-primary me-3 btn-lg" onClick={helpMe} disabled={loading}><i class="fa-regular fa-message"></i>
+            {loading ? <Spinner animation="border" /> : ' Me Ajude, Lucia'}
+          </button>
+          <button type="button" className="btn btn-success me-3 btn-md" onClick={() => setModalShow2(true)}><i class="fa-regular fa-square-check"></i>
+            {loading2 ? <Spinner animation="border" /> : " Atividade do Passo"}
+          </button>
+
+        </div>
+      </div>
+
+      <ModalFullScreen numeroParaPalavra={numeroParaPalavra} setContent={setContent} step={currentStep.id} showState={show} setShowState={setShow} content={content} />
+
+      <MyVerticallyCenteredModal
+        addIdeia={handleSubmitResponse}
+        title="Responda a atividade do passo:"
+        textButton="ENVIAR"
+        show={modalShow2}
+        onHide={() => setModalShow2(false)}
+      >
+        <Form>
+          <Form.Group className="mb-3" controlId="formGroupTitle">
+            <Form.Label>Sua resposta...</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              name="conclusao"
+              onChange={handleChange2}
+              value={formData2.conclusao}
+            />
+          </Form.Group>
+        </Form>
+      </MyVerticallyCenteredModal>
+
+      <MyVerticallyCenteredModal
+        addIdeia={updateResponses}
+        title="Suas Respostas Até Agora"
+        textButton="Editar"
+        show={modalShow3}
+        onHide={() => setModalShow3(false)}
+      >
+        <Form>
+          <Form.Group className="mb-3" controlId="formGroupTitle">
+            {responses.map((item, index) => {
+              const [label, value] = item.response.split(":");
+              return (
+                <div key={index} className={`${styles.inputs}`}>
+                  <Form.Label>{label}</Form.Label>
+                  <Form.Control
+                    className={`${styles.muted}`}
+                    type="text"
+                    name={`conclusao-${index}`}
+                    onChange={(e) => handleChange2(e, index, item.id, label)}
+                    value={formData2[`conclusao-${index}`] !== undefined ? formData2[`conclusao-${index}`] : value}
+                  />
+                </div>
+              );
+            })}
+          </Form.Group>
+        </Form>
+      </MyVerticallyCenteredModal>
+
+      <MyVerticallyCenteredModal
+        title="Quero saber mais sobre sua ideia..."
+        textButton="ADICIONAR IDEIA"
+        show={modalShow}
+        onHide={() => setModalShow(false)}
+      >
+        <Form>
+          <Form.Group className="mb-3" controlId="formGroupTitle">
+            <Form.Label>Título da Ideia</Form.Label>
+            <Form.Control
+              type="text"
+              name="title"
+              onChange={handleChange}
+              value={formData.title}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formGroupDescription">
+            <Form.Label>Descrição da Ideia</Form.Label>
+            <Form.Control
+              type="text"
+              name="description"
+              onChange={handleChange}
+              value={formData.description}
+            />
+          </Form.Group>
+        </Form>
+      </MyVerticallyCenteredModal>
+    </div>
+  );
+};
+
+export default Render;
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\render.module.css ###
+
+.container{
+    border: 1px solid #6c757d;
+    padding: 1rem;
+    min-height: 200px;
+    border-radius: 8px;
+}
+
+.muted{
+    color: #6c757d; /* Cor cinza */
+    opacity: 0.8; 
+}
+
+.inputs{
+    margin-bottom: 1rem;
+}
+
+/* SIDE BAR */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 200px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar ul li {
+    margin-bottom: 1rem;
+  }
+  
+  .sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .sidebar ul li a:hover {
+    color: #007bff;
+  }
+  
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Side.jsx ###
+
+// Sidebar
+
+import React from 'react';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import { Link } from 'react-router-dom';
+import styles from "./side.module.css";
+
+const Side = () => {
+  return (
+    <Navbar className={styles.side} variant="dark">
+      <h1 style={{ color: 'white' }}>LucIA</h1>
+
+      <Nav className={styles.nav} defaultActiveKey="/">
+        <Nav.Item className={styles.navItem}>
+          <i class="fa-solid fa-code-branch"></i>
+          <Nav.Link as={Link} to="component1" style={{ color: '#fff' }} className={styles.navLink}>Ideias</Nav.Link>
+        </Nav.Item>
+        <Nav.Item className={styles.navItem}>
+        </Nav.Item>
+      </Nav>
+
+      <Navbar.Brand as={Link} className={`${styles.brand}`} to="/"><i class="fa-solid fa-right-from-bracket"></i> Sair</Navbar.Brand>
+      
+    </Navbar>
+  );
+}
+
+export default Side;
+
+
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\side.module.css ###
+
+ /* NOVO SIDE */
+
+ .side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 200px;
+    background-color: #346EE0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  
+  .nav {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ícone */
+  
+  .navItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: x-large; /*tamanho do 'inicio'*/
+    color: #fff;
+  }
+  
+  .brand {
+    font-size: 2rem;
+  }
+  
+  .fontSizeLarge {
+    font-size: 1.5rem;
+    margin-top: auto; /* Garante que o link Sair fique no final */
+  }
+  
+  
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\steps.module.css ###
+
+.temas::after{
+    content: "";
+    position: relative;
+    height: 20px;
+    width: 1px;
+    left: 20px;
+    background-color: rgb(192, 192, 192);
+}
+
+.temas>div{
+    border: 1px solid #00000042;
+}
+
+.paragrafo{
+    font-size: 1.2rem;
+   }
+   
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\novoFront\Table.jsx ###
+
+import React, { useState } from 'react';
+import Table from 'react-bootstrap/Table';
+import api from '../../services/api';
+import { useAuth } from '../../context/useAuth';
+import Form from 'react-bootstrap/Form';
+import MyVerticallyCenteredModal from './MyVerticallyCenteredModal';
+import { useStepList } from '../../context/StepListContext';
+import { useNavigate } from 'react-router-dom';
+import SweetAlert from "react-bootstrap-sweetalert";
+
+const IdeiasTable = ({ ideias, fetchIdeias }) => {
+  const navigate = useNavigate();
+  const { setIdeia } = useStepList();
+  const { state } = useAuth();
+  const { token } = state;
+  const [formData, setFormData] = useState({ id: "", title: "", description: "" });
+  const [modalShow, setModalShow] = useState(false);
+  const [confirmar, setConfirmar] = useState(false);
+  const [confirmarId, setConfirmarId] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const truncateText = (text, maxLength) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
+    }
+    return text;
+  };
+
+  const confirmDeleteIdea = (id) => {
+    setConfirmarId(id);
+    setConfirmar(true);
+  };
+
+  const handleDeleteIdea = async () => {
+    try {
+      await api.delete(`/ideas`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        data: { idIdea: confirmarId }
+      });
+      fetchIdeias();
+      setConfirmar(false);
+    } catch (error) {
+      console.error('Erro ao deletar ideia:', error);
+    }
+  };
+
+  const handleEditIdea = (id, title, description) => {
+    setFormData({ id, title, description });
+    setModalShow(true);
+  };
+
+  const handlePlayIdea = (id, title, description) => {
+    setIdeia({ id, title, description });
+    navigate("/home/component2");
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      await api.put(
+        `/ideas`,
+        { id_idea: formData.id, title: formData.title, description: formData.description },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      fetchIdeias();
+      setModalShow(false);
+    } catch (error) {
+      console.error('Erro ao atualizar ideia:', error);
+    }
+  };
+
+  return (
+    <>
+      <Table striped bordered hover variant="light">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ideia</th>
+            <th>Descrição detalhada</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ideias.map((ideia, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{ideia.title}</td>
+              <td className="text-muted">{truncateText(ideia.description, 50)}</td>
+              <td>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm me-2"
+                    onClick={() => handlePlayIdea(ideia.id, ideia.title, ideia.description)}
+                  >
+                    <i className="fa-solid fa-arrow-right"></i> Continuar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm me-2"
+                    onClick={() => handleEditIdea(ideia.id, ideia.title, ideia.description)}
+                  >
+                    <i className="fa-solid fa-pen"></i> Editar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => confirmDeleteIdea(ideia.id)}
+                  >
+                    <i className="fa-solid fa-trash-can"></i> Excluir
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      <SweetAlert
+        warning
+        showCancel
+        confirmBtnText="Sim, excluir!"
+        confirmBtnBsStyle="danger"
+        cancelBtnText="Cancelar"
+        cancelBtnBsStyle="light"
+        title="Confirme sua ação"
+        onConfirm={handleDeleteIdea}
+        onCancel={() => setConfirmar(false)}
+        show={confirmar}
+      >
+        Deseja realmente excluir esta ideia?
+      </SweetAlert>
+
+      <MyVerticallyCenteredModal addIdeia={handleSaveChanges} textButton="SALVAR IDEIA" show={modalShow} onHide={() => setModalShow(false)}>
+        <Form>
+          <Form.Group className="mb-3" controlId="formGroupTitle">
+            <Form.Label>Título da Ideia</Form.Label>
+            <Form.Control
+              type="text"
+              name="title"
+              onChange={handleChange}
+              value={formData.title}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formGroupDescription">
+            <Form.Label>Descrição da Ideia</Form.Label>
+            <Form.Control
+              type="text"
+              name="description"
+              onChange={handleChange}
+              value={formData.description}
+            />
+          </Form.Group>
+        </Form>
+      </MyVerticallyCenteredModal>
+    </>
+  );
+};
+
+export default IdeiasTable;
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\components\ui\button.jsx ###
+
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva } from "class-variance-authority";
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "button"
+  return (
+    (<Comp
+      className={cn(buttonVariants({ variant, size, className }))}
+      ref={ref}
+      {...props} />)
+  );
+})
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\context\constant.js ###
+
+// constants.js
+export const passosEmpreendedor = [
+    { titulo: "Passo 1", descricao: "Segmentação de Mercado" },
+    { titulo: "Passo 2", descricao: "Mercado Inicial" },
+    { titulo: "Passo 3", descricao: "Perfil do usuário final" },
+    { titulo: "Passo 4", descricao: "Tamanho de mercado" },
+    { titulo: "Passo 5", descricao: "Persona" },
+    { titulo: "Passo 6", descricao: "Ciclo de uso completo" },
+    { titulo: "Passo 7", descricao: "Especificação de produto" },
+    { titulo: "Passo 8", descricao: "Proposta de valor" },
+    { titulo: "Passo 9", descricao: "Próximos clientes" },
+    { titulo: "Passo 10", descricao: "Defina seu Core" },
+    { titulo: "Passo 11", descricao: "Posicionamento Competitivo" },
+    { titulo: "Passo 12", descricao: "Unidade de Tomada de Decisão" },
+    { titulo: "Passo 13", descricao: "Processo de Tomada de Decisão" },
+    { titulo: "Passo 14", descricao: "TAM próximos mercados" },
+    { titulo: "Passo 15", descricao: "Modelo de negócios " },
+    { titulo: "Passo 16", descricao: "Precificação" },
+    { titulo: "Passo 17", descricao: "LTV" },
+    { titulo: "Passo 18", descricao: "Mapeamento processo de vendas" },
+    { titulo: "Passo 19", descricao: "COCA" },
+    { titulo: "Passo 20", descricao: "Definição de Hipóteses" },
+    { titulo: "Passo 21", descricao: "Teste de Hipóteses" },
+    { titulo: "Passo 22", descricao: "MVBP" },
+    { titulo: "Passo 23", descricao: "Brincar" },
+    { titulo: "Passo 24", descricao: "Roadmap do Produto" }
+  ];
+  
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\context\FormDataContext.js ###
+
+import React, { createContext, useContext, useState } from 'react';
+
+const FormDataContext = createContext();
+
+export const useFormData = () => useContext(FormDataContext);
+
+export const FormDataProvider = ({ children }) => {
+    const [formData, setFormData] = useState({
+        title:"",
+        description:""
+    });
+
+
+    const updateFormData = (id, data) => {
+        setFormData(prev => ({ ...prev, [id]: data }));
+    };
+
+    return (
+        <FormDataContext.Provider value={{ formData,}}>
+            {children}
+        </FormDataContext.Provider>
+    );
+};
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\context\StepListContext.jsx ###
+
+// contexto de cada passo
+
+import React, { createContext, useContext, useState } from 'react';
+const StepListContext = createContext();
+
+export const useStepList = () => useContext(StepListContext);
+
+export const StepListProvider = ({ children }) => {
+    const temas = [
+    { id: 1, title: "Segmentação de Mercado", color: "primary", tema: "Mercado", desc: "Identifique uma lista de mercados em que sua ideia é possível", description:"Vamos iniciar nossa jornada de refinamento da ideia. No Passo 1, iremos pensar em todas as possibilidades de aplicação da sua ideia, pensando em diferentes possíveis usuários finais para que possamos definir uma boa tática de pesquisa.", objective:"Criar uma lista de possíveis mercados candidatos e uma metodologia para investigar eles.", instructions:"Utilize a resposta do gerador para fazer sua própria lista. Adicione mercados que você já sabe que possam fazer sentido à lista gerada.Retire aqueles que você já identifique que não faça nenhum sentido. Faça a pesquisa primária, converse com gente de verdade.", exercise:"Como atividade para este passo, indique os 5 principais mercados que você acredita que façam sentido para sua ideia." },
+    { id: 2, title: "Mercado Inicial", color: "primary", tema: "Mercado", desc: "Defina qual que vai ser seu mercado inicial estratégico para dar partida a sua jornada", description:"Agora iremos focar nossas energias em apenas um local para que possamos ser mais estratégicos.Então, a partir da lista de mercados definida anteriormente, iremos avaliar qual faz mais sentido com relação a sua ideia.", objective:"Investigar a lista de mercados candidatos e definir qual o melhor mercado para iniciarmos", instructions:"A partir da lista de mercados entregue no passo anterior, entenda o argumento da minha resposta e pondere se você concorda ou não. Faça suas adaptações no detalhamento do mercado.", exercise:"Indique qual o seu Mercado Inicial de forma detalhada"  },
+    { id: 3, title: "Perfil do Usuário Final", color: "secondary", tema: "Cliente", desc: "Entenda quem será seu usuário mais a fundo e encontre suas características" ,description:"Hora de usar o resultado da sua Pesquisa Primária de mercado. Me conte quais são os principais achados da sua pesquisa de mercado, quem é seu cliente? Quais as principais características dele?", objective:"Achar características marcantes, relevantes e comuns entre seus possíveis usuários", instructions:"Utilize sua pesquisa primária e a esquematize em uma tabela. Me conte quais são as principais características, eu te darei algumas dicas de possíveis características para você investigar, e também vou te ajudar como investigar. Pesquise com gente de verdade.", exercise:"Indique os principais achados do perfil do seu usuário." },
+    { id: 4, title: "Tamanho do Mercado Inicial", color: "primary", tema: "Mercado", desc: "Estime qual o tamanho da oportunidade que você tem na mesa.",description:"Neste passo iremos definir o tamanho de mercado endereçável do seu Mercado Inicial para avaliarmos o valor que este mercado possui para a sua ideia", objective:"Definir qual o tamanho do bolo que está em cima da mesa", instructions:"Revise a minha resposta Verifique o método de cálculo e fontes para você refazer e chegar em alguma correção de valor", exercise:"Qual o total de clientes endereçáveis do seu mercado inicial e o seu TAM estimado?"  },
+    { id: 5, title: "Desenho de Persona", color: "secondary", tema: "Cliente", desc: "Visualize quem é o seu possível cliente a partir das informações coletadas até o momento",description:"Vamos transformar agora seu cliente em uma pessoa real, para que possamos enxergar de forma mais concisa quem é nosso usuário.",objective:"Identificar de forma clara quem é o cliente que eu tenho que atrair",instructions:"Relembre o Perfil do seu Usuário. Materialize este perfil em uma pessoa, utilize minha resposta para ter estas dicas. Utilize tanto minha estrutura quanto minhas dicas de como possa ser esta pessoa, mas lembre-se, baseie-se na sua pesquisa primária.",exercise:"Me conta então quem você imagina que deva ser sua persona."  },
+    { id: 6, title: "Ciclo de Vida do Cliente", color: "success", tema: "Produto", desc: "Entenda o contexto completo de como seu cliente se comporta e como seu produto irá encaixar em sua vida" ,description:"Agora que sabemos quem é o nosso cliente, vamos observar e esquematizar como ele se comporta e como iremos nos inserir em sua história para conseguirmos gerar valor.",objective:"Identificar de forma clara quem é o cliente que eu tenho que atrair",instructions:"Observe o ciclo desenhado agora para que você possa se inspirar e ter uma noção inicial de como possa ser este ciclo.Porém, é necessária você ver na prática como que seu cliente irá fazer, visite ele para entender seu dia a dia.",exercise:"Defina o ciclo de vida do seu cliente e como que você irá se encaixar nele." },
+    { id: 7, title: "Especificação Alto Nível do Produto", color: "success", tema: "Produto", desc: "Crie uma representação visual do seu produto para que fique claro o que você fará",description:"Descobrimos qual o mercado que iremos entrar, o cliente que iremos atender e qual dor iremos resolver, agora devemos pensar em qual produto que vai gerar a solução para este problema.",objective:"Criar uma representação visual do seu produto",instructions:"Obtenha ideias de possíveis funcionalidades para seu produto.Complete esta ideia a sua maneira, após isto, teste com possíveis clientes que se encaixem com sua persona",exercise:"Descreva seu produto com as funcionalidades que você imagina."  },
+    { id: 8, title: "Quantificação da Proposta de Valor", color: "success", tema: "Produto", desc: "Quantifique o benefício total que seu produto gerará de valor ao seu cliente",description:"Este produto que você definiu parece ser interessante, mas devemos avaliar se ele realmente gera valor para o cliente. A melhor maneira que temos de fazer isto é quantificando a proposta de valor!",objective:"Calcular quanto valem as principais dores do seus clientes",instructions:"Relembre quais são as principais dores do seu cliente A partir disto, estime quanto que ele vai ganhar, ou deixar de perder, caso compre seu produto.",exercise:"Quais problemas do cliente você resolve e quanto você gera de valor?"  },
+    { id: 9, title: "10 Próximos Clientes", color: "secondary", tema: "Cliente", desc: "Entenda quem serão seus próximos clientes depois da sua persona",description:"Não iremos parar apenas na nossa persona, identificaremos os próximos 10 clientes que tem potencial para serem nossos usuários, que serão nossos próximos alvos.",objective:"Identificar possíveis pontos perdidos com clientes que possuem outras visões",instructions:"Defina uma lista 10 possíveis clientes. Utilize minhas dicas para montar sua lista. Após isto, defina um roteiro de pesquisa com estas personas para preencher uma avaliação dos próximos clientes.",exercise:"Me conte quem são seus 10 próximos clientes e me detalhe os 3 próximos."  },
+    { id: 10, title: "Especificações do Produto", color: "success", tema: "Produto", desc: "Defina as especificações claras e detalhadas do seu produto ou serviço.",description:"",objective:"",instructions:"",exercise:""  },
+    { id: 11, title: "Prova de Conceito", color: "success", tema: "Produto", desc: "Valide sua ideia inicial por meio de uma prova de conceito." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 12, title: "Plano de Desenvolvimento Tecnológico", color: "success", tema: "Produto", desc: "Planeje todas as etapas do desenvolvimento tecnológico do seu produto.",description:"",objective:"",instructions:"",exercise:""  },
+    { id: 13, title: "Estratégia de Go-to-Market", color: "warning", tema: "Venda", desc: "Defina uma estratégia de entrada no mercado para seu produto ou serviço." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 14, title: "Plano de Vendas", color: "warning", tema: "Venda", desc: "Estruture um plano de vendas eficiente e alinhado com seus objetivos de mercado." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 15, title: "Processo de Vendas", color: "warning", tema: "Venda", desc: "Desenvolva e documente um processo de vendas claro e repetível." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 16, title: "Estratégia de Preço", color: "warning", tema: "Venda", desc: "Defina uma estratégia de preço competitiva para maximizar receitas e margens." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 17, title: "Modelo de Receita", color: "dark", tema: "Finanças", desc: "Descreva como sua empresa irá gerar receita e quais são suas fontes principais.",description:"",objective:"",instructions:"",exercise:""  },
+    { id: 18, title: "Cálculo do Tamanho do Mercado", color: "dark", tema: "Finanças", desc: "Calcule o tamanho do mercado total disponível para seus produtos ou serviços." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 19, title: "Cálculo de Custos", color: "dark", tema: "Finanças", desc: "Identifique e calcule todos os custos associados ao desenvolvimento e operação.",description:"",objective:"",instructions:"",exercise:""  },
+    { id: 20, title: "Margem Bruta", color: "dark", tema: "Finanças", desc: "Calcule a margem bruta para avaliar a lucratividade do seu produto ou serviço.",description:"",objective:"",instructions:"",exercise:""  },
+    { id: 21, title: "Break-even", color: "dark", tema: "Finanças", desc: "Determine o ponto de equilíbrio em que suas receitas cobrem seus custos totais." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 22, title: "Plano de Validação", color: "danger", tema: "Testes", desc: "Desenvolva um plano para validar as principais hipóteses do seu negócio." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 23, title: "Medição de Métricas Chave", color: "danger", tema: "Testes", desc: "Identifique e acompanhe as métricas chave para medir o sucesso do seu negócio." ,description:"",objective:"",instructions:"",exercise:"" },
+    { id: 24, title: "Análise de Resultados e Iteração", color: "danger", tema: "Testes", desc: "Analise os resultados e itere continuamente para melhorar seu produto ou serviço." ,description:"",objective:"",instructions:"",exercise:"" }
+];
+
+    const [progress,setProgress] = useState(null)
+    const [render,setRender] = useState()
+
+    const [ideia,setIdeia]= useState({
+        ideia:"",
+        descricao:""
+    })
+    const [currentStep, setCurrentStep] = useState(temas[0]);
+
+    const nextStep = () => {
+        const index = temas.findIndex(tema => tema.id === currentStep.id);
+        if (index < temas.length - 1) {
+            setCurrentStep(temas[index + 1]);
+        }
+    };
+
+    const previousStep = () => {
+        const index = temas.findIndex(tema => tema.id === currentStep.id);
+        if (index > 0) {
+            setCurrentStep(temas[index - 1]);
+        }
+    };
+
+    return (
+        <StepListContext.Provider value={{ temas, currentStep, nextStep, previousStep,setCurrentStep,ideia,setIdeia,progress,setProgress,render,setRender }}>
+            {children}
+        </StepListContext.Provider>
+    );
+};
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\context\useAuth.jsx ###
+
+import React, { createContext, useReducer, useContext, useEffect } from 'react';
+
+// Definindo o formato do estado inicial
+const initialState = {
+  token: null,
+  refreshToken: null,
+  first_name: null,
+  ideias: [],
+  progress:null
+};
+
+// Criando o contexto
+const AuthContext = createContext();
+
+// Reducer para atualizar os tokens e manipular o array ideias
+function authReducer(state, action) {
+  switch (action.type) {
+    case 'SET_TOKENS':
+      return {
+        ...state,
+        token: action.payload.token,
+        refreshToken: action.payload.refreshToken,
+        first_name: action.payload.first_name,
+        progress: action.payload.progress,
+      };
+    case 'LOGOUT':
+      return {
+        ...state,
+        token: null,
+        refreshToken: null,
+        first_name: null,
+        ideias: [],
+        progress:null
+      };
+    case 'ADD_IDEIA':
+      return {
+        ...state,
+        ideias: [...state.ideias, action.payload]
+      };
+    case 'DELETE_IDEIA':
+      return {
+        ...state,
+        ideias: state.ideias.filter((_, index) => index !== action.payload)
+      };
+    case 'SET_IDEIAS':
+      return {
+        ...state,
+        ideias: action.payload
+      };
+    default:
+      return state;
+  }
+}
+
+// Função para carregar o estado inicial de sessionStorage
+const loadInitialState = () => {
+  const storedState = sessionStorage.getItem('authState');
+  return storedState ? JSON.parse(storedState) : initialState;
+};
+
+// Componente Provider
+export const AuthProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, loadInitialState());
+
+  useEffect(() => {
+    // Salva o estado no sessionStorage sempre que mudar
+    sessionStorage.setItem('authState', JSON.stringify(state));
+  }, [state]);
+
+  return (
+    <AuthContext.Provider value={{ state, dispatch }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Hook para usar o contexto de autenticação
+export const useAuth = () => useContext(AuthContext);
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\Corpo.jsx ###
+
+import React from 'react';
+import CardGen from './CardGen';
+
+const ideias = [
+    { titulo: "Healthy App", descricao: "For healthy people looking to maintain a balanced diet.", data: "20/09/2001" },
+    { titulo: "Travel Planner", descricao: "An app to help users plan their trips with suggestions for sightseeing and accommodations.", data: "15/03/2022" },    
+  ];
+  
+
+const Corpo = () => {
+  return (
+    <div>
+        <div className=' mt-3 flex flex-col gap-4'>
+      {ideias.map(value => (
+        <CardGen 
+          key={value.titulo} // Adicionando uma chave única para cada componente
+          titulo={value.titulo} 
+          descricao={value.descricao}
+        />
+      ))}
+      </div>
+    </div>
+  );
+}
+
+export default Corpo;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\index.css ###
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Reset CSS */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    font-family: "Inter", sans-serif;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+body{
+  background-color: #fffefd;
+}
+
+
+@layer base {
+  .dark {
+    --background: 225 9% 9%;
+    --foreground: 210 40% 98%;
+
+    --card: 228 9% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 228 9% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 252 100% 69%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 228 6% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 228 6% 16%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 228 6% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 228 6% 16%;
+    --input: 228 6% 16%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+  }
+} 
+.borda-bottom{
+  border-bottom: 0.5px solid rgba(0, 0 ,0, 0.3);
+}
+
+.borda-topo{
+  border-top: 0.5px solid rgba(0, 0 ,0, 0.3);
+}
+
+
+.container {
+  margin: 0 auto; 
+  max-width: 33rem; 
+
+  
+}
+
+.cardGrid {
+  display: grid;
+  grid-gap: 0.5rem;
+  align-items: center; 
+  justify-content: center; 
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+  max-width: 1000;
+}
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+  min-height: 80px;
+  width: 100%; 
+}
+
+
+
+#chat3 .form-control {
+  border-color: transparent;
+}
+
+#chat3 .form-control:focus {
+  border-color: transparent;
+  box-shadow: inset 0px 0px 0px 1px transparent;
+}
+
+.badge-dot {
+  border-radius: 50%;
+  height: 10px;
+  width: 10px;
+  margin-left: 2.9rem;
+  margin-top: -0.75rem;
+}
+
+/* ChatComponent.css */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  max-width: 600px;
+  margin: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  max-width: 80%;
+}
+
+.message.user {
+  align-self: flex-end;
+  background-color: #0b93f6;
+}
+
+.message.bot {
+  align-self: flex-start;
+  background-color: #e5e5ea;
+  color: black;
+}
+
+.input-container {
+  display: flex;
+  padding: 10px;
+}
+
+.input-message {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
+
+.send-button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: #0b93f6;
+  color: white;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.input-message:focus, .send-button:focus {
+  outline: none;
+}
+
+.navbar {
+  width: 100%;
+  background-color: #f0f2f5; 
+}
+
+.nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding: 0 20px;
+}
+
+.logo .brand-font {
+  color: #1890ff; 
+}
+
+.leftMenu, .rightMenu {
+  display: none; 
+}
+
+@media (min-width: 768px) {
+  .leftMenu, .rightMenu {
+    display: block; 
+  }
+}
+
+.dots span {
+  animation: typingDots 1.5s infinite step-start;
+  opacity: 0;
+}
+
+.dots span:nth-child(1) { animation-delay: 0s; }
+.dots span:nth-child(2) { animation-delay: 0.5s; }
+.dots span:nth-child(3) { animation-delay: 1s; }
+
+@keyframes typingDots {
+  0%, 100% {
+      opacity: 0;
+  }
+  50% {
+      opacity: 1;
+  }
+}
+
+
+.register {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background-color: #141828;
+  color: #9BA5B5;
+}
+
+@media (max-width: 768px) {
+  .register {
+    grid-template-columns: 1fr; /* Empilha verticalmente */
+  }
+}
+
+.formulario {
+  background-position: bottom;
+  background-size: cover;
+  background-image: url("../public/heroRegister.jpg");
+  height: 100vh;
+}
+
+.form-data {
+  display: grid;
+  width: 100%; /* Ajusta a largura para ser mais flexível */
+  max-width: 400px; /* Reduz a largura máxima */
+  margin: 0 auto;
+  color: #9BA5B5;
+  padding: 0 20px;
+  gap: 20px;
+}
+
+.hero {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.hero > h1 {
+  position: relative;
+  display: inline-block;
+}
+
+.form-data input, .form-data button {
+  display: block;
+  width: 100%;
+  height: 40px; /* Aumenta a altura para melhor toque */
+  background: #23283D;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, .1);
+  border-radius: 6px;
+  font-size: 16px;
+  color: #fff;
+}
+
+.form-data h1 {
+  font-weight: 600;
+  font-size: 26px;
+  word-spacing: .3rem;
+  color: #EBEEF3;
+}
+
+.form-data p {
+  color: #63636B;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 200%;
+}
+
+.logotipo {
+  display: flex;
+  align-items: center;
+}
+
+.logotipo img {
+  width: 25px;
+}
+
+.form-data button {
+  background-image: linear-gradient(to top, #2B7AFB 0%, #2174FD 90%, #213BFD 100%);
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+  cursor: pointer;
+  font-size: 14px; /* Aumenta a fonte para legibilidade */
+  line-height: 150%;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+@media(max-width:600px){
+  .formulario {
+    background-position: bottom;
+    background-size: cover;
+    background-image: url("../public/heroRegister.jpg");
+    display: none;
+    height: 100vh;
+  }
+}
+
+.linkhome{
+  font-weight:600;
+  text-decoration: underline;
+  color: #fff;
+
+}
+
+.formulario {
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 22, 45, 0.9), rgba(255, 255, 255, 0));
+  z-index: 1;
+}
+
+.form-data {
+  position: relative;
+  z-index: 2;
+}
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\index.js ###
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import { AuthProvider } from './context/useAuth';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+    <AuthProvider>
+        <ToastContainer
+position="top-right"
+autoClose={2500}
+hideProgressBar={false}
+newestOnTop={false}
+closeOnClick
+rtl={false}
+pauseOnFocusLoss
+draggable
+pauseOnHover
+theme="dark"
+
+/>
+
+        <App />
+    </AuthProvider>
+);
+
+
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\Inputant2.jsx ###
+
+import React from 'react'
+import { Input } from 'antd'
+const Inputant2 = () => {
+  return (
+    <div className=' mt-6 pt-2 flex flex-col gap-1 pb-4'>
+    <div className=' flex justify-between center '>
+        <p className=' text-xs'>Lorem ipsum dolor sit amet.</p>
+    </div>
+    <Input placeholder="Vamos amadurecer sua ideia" size="small" prefix={<img src="/XDZT.gif" alt="User" style={{ width: '20px', height: '20px' }} />} />
+  </div>
+  )
+}
+
+export default Inputant2
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\lib\utils.js ###
+
+// src/lib/utils.js
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\assistant.module.css ###
+
+.header{
+
+    background-image: url("../../public/Group\ 1.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    border-radius: 5px 5px 0px 0px;
+}
+
+.container{
+    max-width: 500px;
+    margin: 0 auto;
+    width: 700px;
+    padding-top: 2rem;
+}
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\ChooseStep.jsx ###
+
+import React from 'react';
+import { LeftOutlined } from '@ant-design/icons';
+import { Image } from 'antd';
+import Card2 from './Card2';
+import CardGrid from './CardGrid';
+
+const steps = [
+  { title: "Passo 1: Identificação do Problema" },
+  { title: "Passo 2: Pesquisa Preliminar" },
+  { title: "Passo 3: Formulação da Hipótese" },
+  { title: "Passo 4: Planejamento Experimental" },
+  { title: "Passo 5: Coleta de Dados" },
+  { title: "Passo 6: Análise dos Dados" },
+  { title: "Passo 7: Interpretação dos Resultados" },
+  { title: "Passo 8: Documentação e Relatório" },
+  { title: "Passo 9: Revisão Crítica" },
+  { title: "Passo 10: Publicação dos Resultados" },
+  { title: "Passo 11: Replicação do Estudo" },
+  { title: "Passo 12: Aplicação Prática dos Resultados" },
+  { title: "Passo 13: Reavaliação da Hipótese" },
+  { title: "Passo 14: Ajustes no Método Experimental" },
+  { title: "Passo 15: Segunda Coleta de Dados" },
+  { title: "Passo 16: Segunda Análise dos Dados" },
+  { title: "Passo 17: Novas Interpretações" },
+  { title: "Passo 18: Novos Documentos e Relatórios" },
+  { title: "Passo 19: Crítica e Feedback Adicional" },
+  { title: "Passo 20: Ajustes Finais" },
+  { title: "Passo 21: Terceira Publicação" },
+  { title: "Passo 22: Marketing e Divulgação" },
+  { title: "Passo 23: Implementação Comercial" },
+  { title: "Passo 24: Avaliação de Impacto e ROI" }
+
+]
+
+
+const ChooseStep = () => {
+  return (
+    <>
+    <div className="App bg-[#EFF5F5] borda-bottom">
+      <div className="container">
+        <div className='flex justify-between'>
+          <a href="/"><LeftOutlined /> Ideias</a>
+          <Image width={50} src="https://nwaypro.com/wp-content/uploads/2021/02/dummy-logo-2b.png" />
+        </div>
+      </div>
+    
+
+    </div>
+
+<div className='container pt-20'>
+<CardGrid className=" px-6">
+  {steps.map((value, i) => (
+    <Card2 key={i}>
+      <h2>{value.title}</h2>
+    </Card2>
+  ))}
+</CardGrid>
+</div>
+</>
+  );
+}
+
+export default ChooseStep;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\IdeasPage.js ###
+
+import React, { useState, useEffect, useRef } from 'react';
+import { AppBar, Toolbar, Typography, Container, TextField, List,Button, ListItem, ListItemText, Box, Modal, IconButton } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon, PlayArrow, Add, HelpOutline as HelpOutlineIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import cloneDeep from 'lodash/cloneDeep';
+import { useAuth } from '../context/useAuth';
+import api from '../services/api';
+import "./Ideas.css";
+import { useFormData } from '../context/FormDataContext';
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    maxHeight: '400px',
+    overflowY: 'scroll'
+};
+
+const IdeasPage = () => {
+    console.log("esse é o orm",useFormData)
+    const { state } = useAuth();
+    const token = state.token;
+    const [ideas, setIdeas] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [editIndex, setEditIndex] = useState(null);
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        title: '',
+        description: ''
+    });
+    const titleInputRef = useRef(null);
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/');
+        } else {
+            fetchIdeas();
+        }
+    }, [token, navigate]);
+
+    const fetchIdeas = async () => {
+        try {
+            const response = await api.get('/ideas', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setIdeas(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar ideias:', error);
+        }
+    };
+
+    const handleAddIdea = async () => {
+        if (formData.title) {
+            try {
+                const response = await api.post('/ideas', { title: formData.title, description: formData.description }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setIdeas([...ideas, response.data]);
+                fetchIdeas();
+                setFormData({
+                    title: '',
+                    description: ''
+                });
+                titleInputRef.current.focus();
+            } catch (error) {
+                console.error('Erro ao adicionar ideia:', error);
+            }
+        }
+    };
+
+    const handleChange = (event, key) => {
+        setFormData({ ...formData, [key]: event.target.value });
+    };
+
+    const handleOpenModal = (idea, index) => {
+        setEditIndex(index);
+        setFormData(cloneDeep({ title: idea.title, description: idea.description }));
+        setOpenModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        setEditIndex(null);
+        setFormData({
+            title: '',
+            description: ''
+        });
+    };
+
+    const handleEditIdea = async () => {
+        if (editIndex !== null) {
+            try {
+                const response = await api.put(`/ideas`, { title: formData.title, description: formData.description, id_idea: ideas[editIndex].id }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                const updatedIdeas = ideas.map((idea, index) => index === editIndex ? response.data : idea);
+                setIdeas(updatedIdeas);
+                handleCloseModal();
+                fetchIdeas();
+            } catch (error) {
+                console.error('Erro ao editar ideia:', error);
+            }
+        }
+    };
+
+    const handleDeleteIdea = async (id) => {
+        try {
+            await api.delete(`/ideas`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                data: { idIdea: id }
+            });
+            fetchIdeas();
+        } catch (error) {
+            console.error('Erro ao deletar ideia:', error);
+        }
+    };
+
+    const handleAccessTimeClick = (index) => {
+        navigate('/step', { state: { idea: ideas[index] } });
+    };
+
+    const handleNavigateToAssistant = () => {
+        navigate('/assistente');
+    };
+
+    return (
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}   >
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6">LucIA</Typography>
+                </Toolbar>
+            </AppBar>
+            <Container  component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, overflow: 'auto', pt: '10px' }}>
+                <TextField
+                    label="Digite sua ideia aqui"
+                    variant="outlined"
+                    value={formData.title}
+                    onChange={(e) => handleChange(e, 'title')}
+                    inputRef={titleInputRef}
+                    autoFocus
+                    fullWidth
+                    sx={{ mb: 2 }}
+                />
+                <TextField
+                    label="Descrição"
+                    variant="outlined"
+                    value={formData.description}
+                    onChange={(e) => handleChange(e, 'description')}
+                    fullWidth
+                    sx={{ mb: 2 }}
+                />
+                <IconButton
+                    size='large'
+                    onClick={handleAddIdea}
+                    edge="end"
+                    aria-label="add"
+                    sx={{
+                        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                        '&:hover': {
+                            backgroundColor: 'rgba(0, 255, 0, 0.6)',
+                        },
+                        transition: 'background-color 0.3s ease',
+                        width: '64px',
+                        height: '64px',
+                    }}
+                >
+                    <Add sx={{ color: 'inherit' }} />
+                </IconButton>
+                <List sx={{ width: '100%', bgcolor: 'background.paper', overflow: 'auto' }}>
+                    {ideas.map((idea, index) => (
+                        <ListItem key={index} divider sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            {idea && <ListItemText primary={idea.title} />}
+                            <Box>
+                                <IconButton onClick={() => handleAccessTimeClick(index,idea)} edge="end" aria-label="access-time" sx={{
+                                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 255, 0, 0.6)',
+                                    },
+                                    transition: 'background-color 0.3s ease',
+                                    mr: '1px'
+                                }}>
+                                    <PlayArrow sx={{ color: 'inherit' }} />
+                                </IconButton>
+                                <IconButton onClick={() => handleOpenModal(idea, index)} edge="end" aria-label="edit">
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton onClick={() => handleDeleteIdea(idea.id)} edge="end" aria-label="delete">
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
+                        </ListItem>
+                    ))}
+                </List>
+                <Button
+                    variant="outlined"
+                    startIcon={<HelpOutlineIcon />}
+                    onClick={handleNavigateToAssistant}
+                    sx={{ m: 3, position: 'fixed', bottom: 20, left: 0, right: 0, mx: 'auto' }}
+                >
+                    Ainda não tem uma ideia? Assistente
+                </Button>
+            </Container>
+            <Modal open={openModal} onClose={handleCloseModal} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+                <Box sx={style}>
+                    <Typography id="modal-modal-title" variant="h6" component="h2">Editar Ideia</Typography>
+                    <TextField
+                        fullWidth
+                        label="Titulo"
+                        variant="outlined"
+                        value={formData.title}
+                        onChange={(e) => handleChange(e, 'title')}
+                        sx={{ mt: 2, mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Descrição"
+                        variant="outlined"
+                        value={formData.description}
+                        onChange={(e) => handleChange(e, 'description')}
+                        sx={{ mt: 2, mb: 2 }}
+                    />
+                    <Button variant="contained" onClick={handleEditIdea}>Salvar Alterações</Button>
+                </Box>
+            </Modal>
+        </Box>
+    );
+};
+
+export default IdeasPage;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\Inicial.jsx ###
+
+import React, { useState, useEffect, useRef} from 'react';
+import {
+  AppBar, Toolbar, Typography, TextField, Button, List, ListItem, CssBaseline, Box, Container, CircularProgress, IconButton
+} from '@mui/material';
+import { Send as SendIcon, ArrowBack } from '@mui/icons-material';
+import api from '../services/api';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
+import styles from "./assistant.module.css";
+import { Avatar } from 'antd';
+const Inicial = () => {
+  const [inputValue, setInputValue] = useState('');
+  const { state } = useAuth();
+  const token = state.token;
+  console.log("esse é o token: ",token)
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'system', content: 'Olá, sou seu assistente de ideias! Estou aqui para ajudar você, empreendedor, a explorar novas ideias e oportunidades de negócio. Como posso ajudá-lo hoje?' }
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const endOfMessagesRef = useRef(null);
+
+  const formatarResposta = (texto) => {
+    return texto
+        .replace(/\*\*(.*?)\*\*/g, '<Typography variant="body1">$1</Typography>')  
+        .replace(/\. /g, '<br><br>'); 
+};
+
+  const scrollToBottom = () => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleHome = () => {
+    navigate("/home");
+  };
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSend = () => {
+    if (inputValue.trim()) {
+      const newMessage = { role: 'user', content: inputValue };
+      setChatHistory(currentHistory => [...currentHistory, newMessage]);
+      setInputValue('');
+    }
+  };
+
+  useEffect(() => {
+    if (chatHistory.length > 1 && chatHistory.slice(-1)[0].role === 'user') {
+      const fetchData = async () => {
+        setIsTyping(true);
+        const userMessages = chatHistory.filter(msg => msg.role === 'user');
+        const response = await api.post('getResponse', { chatHistory: userMessages }, {
+          headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+          },
+          timeout: 20000});
+        const { content } = response.data.response.choices[0].message;
+        setIsTyping(false);
+
+        const formatedContent = formatarResposta(content)
+        console.log("res",formatedContent)
+        setChatHistory(currentHistory => [...currentHistory, { role: 'system', content }]);
+      };
+      fetchData();
+    }
+    scrollToBottom();
+  }, [chatHistory]);
+
+  return (
+    <Box sx={{ display: 'flex',flexDirection: 'column', marginBottom:"0px", height: '80%' }}>
+      <CssBaseline />
+     
+      
+        <Container maxWidth="sm" sx={{ height: 'calc(100% - 64px)', display: 'flex', flexDirection: 'column' }}>
+        
+      
+          <List sx={{ overflow: 'auto', flexGrow: 1 }}>
+          <div className={`${styles.header}`}>
+            <div className={styles.container}>
+        <Avatar size="large" src="/profile.png"/>
+        <h3 style={{color:"#FFF"}}>Lucia</h3>
+        <p style={{color:"#FFF"}}> vamos conversar e desenvolver uma idéia inovadora </p>
+        </div>
+      </div>
+            {chatHistory.map((message, index) => (
+              <ListItem key={index}  sx={{ display: 'flex', justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <Typography
+                  sx={{
+                    p: 1,
+                    bgcolor: message.role === 'user' ? '#DCF8C6' : '#FFFFFF',
+                    borderRadius: 2,
+                    maxWidth: '75%',
+                    wordWrap: 'break-word',
+                  }}
+                >
+                  {message.content}
+                </Typography>
+              </ListItem>
+            ))}
+            {isTyping && (
+              <Box sx={{ display: 'flex', alignItems: 'center', pl: 1 }}>
+                <CircularProgress size={20} />
+                <Typography sx={{ ml: 1 }}>Digitando...</Typography>
+              </Box>
+            )}
+            <div ref={endOfMessagesRef} />
+          </List>
+          <Box sx={{ display: 'flex', mt: 1 }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Digite uma mensagem"
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyPress={(e) => { if (e.key === 'Enter') handleSend(); }}
+              sx={{ mr: 1 }}
+            />
+            <Button variant="contained" onClick={handleSend} startIcon={<SendIcon />}>
+              Enviar
+            </Button>
+          </Box>
+        </Container>
+     
+    </Box>
+  );
+};
+
+export default Inicial;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\InitialPage.jsx ###
+
+import React from 'react'
+import Inputant from '../Inputant'
+import { Box } from '@mui/material'
+const InitialPage = () => {
+  return (
+    <>
+      <Box>
+        <Inputant/>
+      </Box>
+    </>
+  )
+}
+
+export default InitialPage
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\Login.jsx ###
+
+import React, { useState } from 'react';
+import { FaUser, FaLock } from "react-icons/fa";
+import api from '../services/api';
+import { useAuth } from '../context/useAuth';
+import { useNavigate } from 'react-router-dom';
+import CircularProgress from '@mui/material/CircularProgress';
+import { ToastContainer, toast } from 'react-toastify';
+import { Form } from 'react-bootstrap';
+import styles from "./Login.module.css";
+
+const Login = () => {
+  const { dispatch, state} = useAuth();
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  let navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setLoginForm(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setLoading(true);
+  
+    toast.promise(
+      api.post('login', {
+        email: loginForm.email,
+        password: loginForm.password,
+      }).then(response => {
+        const { accessToken, refreshToken,first_name,progress} = response.data;
+        console.log(response.data)
+        if (accessToken && refreshToken) {
+          dispatch({
+            type: 'SET_TOKENS',
+            payload: { token: accessToken, refreshToken: refreshToken,first_name:first_name}
+          });
+          console.log("state",state)
+          navigate('/home/component1');
+        }
+        return response;
+      }),
+      {
+        pending: 'Carregando...',
+        success: 'Login realizado com sucesso!',
+        error: 'Falha ao realizar login!'
+      }
+    ).catch(err => {
+      if (err.response && err.response.status === 401) {
+        console.log(err);
+      } else {
+        console.log(err)
+        toast.error('Erro no Servidor', {
+          position: "top-center",
+          autoClose: 2500
+        });
+      }
+    }).finally(() => setLoading(false));
+  };
+
+  return (
+    <div className={`${styles.daddy}`}>
+      <div className={`${styles.container}`}>
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <Form onSubmit={handleSubmit} className={`${styles.form}`}>
+            <img src="/sttppi.png" alt="" className={`${styles.imagem}`}/>
+            {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+            
+            <Form.Group controlId="formBasicEmail">
+              <Form.Label>E-mail</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder=""
+                name="email"
+                value={loginForm.email}
+                onChange={handleChange}
+                required
+              />
+              
+            </Form.Group>
+
+            <Form.Group controlId="formBasicPassword">
+              <Form.Label>Senha</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder=""
+                name="password"
+                value={loginForm.password}
+                onChange={handleChange}
+                required
+              />
+             
+              
+            </Form.Group>
+
+            <Form.Group controlId="formBasicCheckbox">
+              <Form.Check type="checkbox" label="Manter conectado" />
+            </Form.Group>
+
+            <button type="submit" className={`btn btn-primary ${styles.button}`}>
+              ENTRAR
+            </button>
+
+            <div className={styles.registerLink}>
+              <p>Não tem uma conta? <a href="#" onClick={() => navigate("/register")}>Registre-se</a></p>
+            </div>
+          </Form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\Login.module.css ###
+
+.container{
+    background-color: #fff;
+    margin: 0 auto;
+    width: 619px;
+    height: 496px;
+    display: grid;
+    grid-template-rows: auto auto auto auto;
+    place-content: center;
+    
+
+}
+
+.daddy{
+    background-color: #f7f7f7;
+    height: 100vh;
+    display: grid;
+    align-items: center;
+
+}
+
+.button{
+    background-color: red;
+    width: 100%;
+    text-transform:uppercase;
+    background-color: #5145E4;
+    color: #fff;
+    height: 58px;
+    border-radius: 5px;
+}
+
+.imagem{
+    width: 10rem;
+    margin: 0 auto;
+}
+
+.form{
+    width: 30rem;
+}
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\MarkdownEditor.js ###
+
+import React, { useState } from 'react';
+import { Typography, Container, Box, TextField, Button } from '@mui/material';
+import ReactMarkdown from 'react-markdown';
+
+const MarkdownEditor = () => {
+  const [markdownText, setMarkdownText] = useState('');
+  const [renderedMarkdown, setRenderedMarkdown] = useState('');
+
+  const handleMarkdownChange = (event) => {
+    setMarkdownText(event.target.value);
+  };
+
+  const handleRenderMarkdown = () => {
+    // Substitui cada \n por \n\n para garantir quebras de linha no Markdown
+    const formattedText = markdownText.replace(/\n/g, '\n\n');
+    setRenderedMarkdown(formattedText);
+  };
+
+  return (
+    <Container component="main" sx={{ mt: 8 }}>
+      <Typography variant="h4" gutterBottom>
+        Editor de Markdown
+      </Typography>
+      <Box sx={{ my: 2 }}>
+        <TextField
+          fullWidth
+          label="Digite seu Markdown"
+          variant="outlined"
+          value={markdownText}
+          onChange={handleMarkdownChange}
+          multiline
+          rows={4}
+        />
+        <Button
+          sx={{ mt: 2 }}
+          variant="contained"
+          color="primary"
+          onClick={handleRenderMarkdown}
+        >
+          Renderizar Markdown
+        </Button>
+      </Box>
+      <Box sx={{ mt: 4, bgcolor: 'background.paper', p: 3, border: '1px solid #ccc' }}>
+        <ReactMarkdown>
+          {renderedMarkdown}
+        </ReactMarkdown>
+      </Box>
+    </Container>
+  );
+};
+
+export default MarkdownEditor;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\Register.jsx ###
+
+import React from 'react'
+import { useState } from 'react'
+import api from '../services/api';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+const Register = () => {
+    const [formData, setFormData] = useState({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      first_name:""
+    });
+ 
+  
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
+
+    const navigate = useNavigate()
+
+    const handleSubmit = async(e) => {
+      e.preventDefault();
+      if (formData.password !== formData.confirmPassword) {
+        setErrorMessage("Passwords do not match!");
+      } else {
+        toast.promise(
+          api.post('register', {
+            email:formData.email,
+            password:formData.password,
+            confirmPassword:formData.confirmPassword,
+            first_name:formData.first_name
+          }).then(response => {
+            return response;
+          }),
+          {
+            pending: 'Carregando...',
+            success: 'Cadastro realizado com sucesso!',
+            error: 'Falha ao realizar login!'
+          }
+        ).catch(err => {
+          if (err.response && err.response.status === 401) {
+          console.log(err)
+          } else {
+            toast.error('Erro no Servidor', {
+              position: "top-center",
+              autoClose: 2500
+            });
+          }
+        }).finally(() => {});
+
+        console.log("Form Data:", formData);
+      }
+    }
+    return (
+      <div className='register'>
+        <div className='hero'>
+          {/* <div className='logotipo'><img src="/XDZT.gif" alt="" /><h1>logo</h1></div> */}
+          <form className='form-data' onSubmit={handleSubmit}>
+            <div>
+              <h1>Get Started in LucIA</h1>
+              <p>a new way of entrepreneurship</p>
+            </div>
+            <label htmlFor="name" className='input-register'>Name <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} required/></label>
+            <label htmlFor="email" className='input-register'>Email <input type="email" name="email" value={formData.email} onChange={handleChange} required /></label>
+            <label htmlFor="password" className='input-register'>Password <input type="password" name="password" value={formData.password} onChange={handleChange} required /></label>
+            <label htmlFor="confirmPassword" className='input-register'>Confirm Password <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required /></label>
+            <button type="submit">Enviar</button>
+            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+            <p>Already have an account <span className='linkhome'> <a href="" onClick={()=> navigate("/")}>Login Here</a></span> </p>
+          </form>
+        </div>
+        <div className='formulario'>
+        <div className='overlay'></div>
+        </div>
+      </div>
+    );
+  }
+  
+  export default Register;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\Render.js ###
+
+import React, { useEffect, useState } from 'react';
+import { AppBar, Toolbar, Typography, Container, Box, IconButton, Button } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowBack } from '@mui/icons-material';
+import api from '../services/api';
+import { useAuth } from '../context/useAuth';
+import { passosEmpreendedor } from '../context/constant';
+import { useStepList } from '../context/StepListContext';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import "./TestTable.css";
+
+const mapa = {
+    '1': 'um',
+    '2': 'dois',
+    '3': 'tres',
+    '4': 'quatro',
+    '5': 'cinco',
+    '6': 'seis',
+    '7': 'sete',
+    '8': 'oito',
+    '9': 'nove',
+    '10': 'dez',
+    '11': 'onze',
+    '12': 'doze',
+    '13': 'treze',
+    '14': 'quatorze',
+    '15': 'quinze',
+    '16': 'dezesseis',
+    '17': 'dezessete',
+    '18': 'dezoito',
+    '19': 'dezenove',
+    '20': 'vinte',
+    '21': 'vinteum',
+    '22': 'vintedois',
+    '23': 'vintetres',
+    '24': 'vintequatro',
+};
+
+const numeroParaPalavra = (numero) => mapa[numero] || 'numero_invalido';
+
+
+
+const Render = () => {
+    const { state } = useAuth();
+    const {setRender,render} = useStepList();
+    const token = state.token;
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [contentAPI, setContentAPI] = useState("");
+    const { formData, passo, currentStep} = location.state || {};
+    const [content, setContent] = useState("");
+
+    setRender(true)
+
+  
+
+    useEffect(() => {
+        if (passo && passo.titulo) {
+            
+            const numero = passo.titulo.split(' ')[1];
+            const passoFormatado = numeroParaPalavra(numero);
+            const fetchData = async () => {
+                setLoading(true);
+                try {
+                    const headers = {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    };
+                    const response = await api.post(`passo/${passoFormatado}`, formData, { headers, timeout: 60000 });
+                    console.log("resposta",response.data.response)
+                    const content = response.data.response || "resposta não encontrada";
+                    console.log("aqui o conteudo",content)
+                    setContentAPI(content);
+                } catch (error) {
+                    console.error('Erro ao buscar dados da API:', error);
+                    setContentAPI('Erro ao carregar dados.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
+        }
+    }, [passo, formData, token]);
+
+    useEffect(() => {
+        if (!token) {
+            navigate("/");
+        }
+    }, [token, navigate]);
+
+    const handleBack = () => {
+        navigate("/step");
+    };
+
+    const handleNextStep = () => {
+        if (currentStep < 23) {
+            navigate('/render', { state: { formData, passo: passosEmpreendedor[currentStep + 1], currentStep: currentStep + 1 } });
+        }
+    };
+
+    const handlePreviousStep = () => {
+        if (currentStep > 0) {
+            navigate('/render', { state: { formData, passo: passosEmpreendedor[currentStep - 1], currentStep: currentStep - 1 } });
+        }
+    };
+
+    const handleHome = () => {
+        navigate("/home");
+    };
+
+    return (
+       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <AppBar position="static">
+        <Toolbar>
+            <IconButton edge="start" color="inherit" onClick={handleBack} aria-label="voltar">
+                <ArrowBack />
+            </IconButton>
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                <a onClick={handleHome} style={{ cursor: "pointer" }}>LucIA</a>
+            </Typography>
+        </Toolbar>
+    </AppBar>
+    <Container component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
+        <Box sx={{ mb: 4, width: '100%' }}>
+            <Typography variant="h5" component="h2" gutterBottom>
+                Bem-vindo ao Caminho do Empreendedor: Os 24 Passos de Bill Aulet
+            </Typography>
+            <Typography variant="body1">
+            {passosEmpreendedor[currentStep].descricao}
+            </Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1, width: '100%', bgcolor: '#f5f5f5', p: 4, borderRadius: 1, display: 'grid', gridTemplateRows: '1fr 1fr 1fr', alignItems: 'stretch', gap: 2 }}>
+            {loading ? (
+                <img src="https://tjpi-teams-apps-balcao-virtual.azurefd.net/images/typing.gif" alt="Carregando..." />
+            ) : (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {contentAPI}
+                </ReactMarkdown>
+            )}
+        </Box>
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <Button variant="contained" onClick={handlePreviousStep} disabled={currentStep === 0}>
+                Anterior
+            </Button>
+            <Button variant="contained" onClick={handleNextStep} disabled={currentStep === 23}>
+                Próximo
+            </Button>
+        </Box>
+    </Container>
+</Box>
+
+    );
+};
+
+export default Render;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\StepPage.js ###
+
+import React, { useState, useEffect } from 'react';
+import { AppBar, Toolbar, Typography, Container, Grid, Card, CardActionArea, CardContent, Box, Modal, Button, TextField, IconButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowBack } from '@mui/icons-material';
+import { useAuth } from '../context/useAuth';
+import { passosEmpreendedor } from '../context/constant';
+
+const languageOptions = [
+  { code: 'en', name: 'Inglês' },
+  { code: 'es', name: 'Espanhol' },
+  { code: 'zh', name: 'Chinês' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'pt', name: 'Português' }
+];
+
+const formFields = [
+  { label: "Título", stateKey: "title" },
+  { label: "Descrição", stateKey: "description" },
+  { label: "Mercados Adjacentes", stateKey: "mercadosAdjacentes" },
+  { label: "BeachHead Market", stateKey: "beachHeadMarket" },
+  { label: "Perfil de Usuário", stateKey: "resumoPerfilUsuario" },
+  { label: "Persona", stateKey: "persona" },
+  { label: "Prioridades da sua Persona", stateKey: "prioridadesPersona" },
+  { label: "Produto", stateKey: "produto" },
+  { label: "Proposta de Valor", stateKey: "propostaValor" },
+  { label: "Clientes", stateKey: "clientes" },
+  { label: "Linguagem de saída dos resultados", stateKey: "idioma" }
+];
+
+const StepPage = () => {
+  const { state } = useAuth();
+  const token = state.token;
+  console.log("Token:", token); // Log para verificar o token
+  const [formData, setFormData] = useState({});
+  const [currentStep, setCurrentStep] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+  const [idIdea, setIdIdea] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state && location.state.idea) {
+      console.log("Idea from location:", location.state.idea); // Log para verificar os dados da localização
+      setFormData(location.state.idea);
+      setIdIdea(location.state.idea.id)
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (!token) {
+      console.log("No token found, redirecting to login..."); // Log para verificar redirecionamento
+      navigate("/");
+    } else if (location.state && location.state.idea) {
+      setFormData(location.state.idea);
+      console.log("setei no form data:",formData); 
+
+    }
+  }, [token, navigate, location]);
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleChange = (e, key) => {
+    console.log(`Changing ${key} to ${e.target.value}`); // Log para verificar mudanças no formData
+    setFormData({ ...formData, [key]: e.target.value,idIdea });
+  };
+
+  const handleSaveChanges = () => {
+    console.log('Ideia salva:', formData);
+    handleCloseModal();
+  };
+
+  const handleHome = () => {
+    navigate("/home");
+  };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleCardClick = (passo, index) => {
+    console.log("Card clicked:", passo, index); // Log para verificar clique no card
+    setCurrentStep(index);
+    console.log("formulario mandado",formData)
+    navigate('/render', { state: { formData, passo, currentStep: index } });
+  };
+
+  const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
+  return (
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <AppBar position="static">
+      <Toolbar>
+        <IconButton edge="start" color="inherit" onClick={handleBack} aria-label="voltar">
+          <ArrowBack />
+        </IconButton>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <a onClick={handleHome} style={{ cursor: "pointer" }}>LucIA</a>
+        </Typography>
+      </Toolbar>
+    </AppBar>
+    <Container component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom style={{ color: '#000' }}>
+        LucIA
+      </Typography>
+      <Button variant="contained" style={{ marginBottom: "24px" }} color="primary" onClick={handleOpenModal}>
+        Editar Ideia
+      </Button>
+      <Grid container spacing={2} justifyContent="center">
+        {passosEmpreendedor.map((passo, index) => (
+          <Grid item xs={6} sm={4} md={3} lg={2} key={index}>
+            <Card sx={{ bgcolor: index >= 9 && index <= 23 ? '#bdbdbd' : '#2196f3', height: '100%' }}>
+              <CardActionArea
+                disabled={index >= 9 && index <= 23}
+                onClick={() => { if (!(index >= 9 && index <= 23)) handleCardClick(passo, index); }}
+                sx={{ height: '100%' }}
+              >
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Typography variant="h6" component="h2" sx={{ color: index >= 9 && index <= 23 ? '#757575' : '#FFF', textAlign: 'center' }}>
+                    {passo.titulo}
+                  </Typography>
+                  <Typography variant="body2" color="text.primary" sx={{ textAlign: 'center', fontSize: '12px', fontWeight: 'bold' }}>
+                    {passo.descricao}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        <Box sx={modalStyle} style={{ maxHeight: "400px", overflowY: "scroll" }}>
+          <Typography id="modal-title" variant="h6" component="h2">
+            Editar Ideia
+          </Typography>
+          {formFields.map((field) => {
+            if (field.stateKey === 'idioma') {
+              return (
+                <FormControl fullWidth sx={{ mt: 2, mb: 2 }} key={field.stateKey}>
+                  <InputLabel id="idioma-label">Linguagem de saída dos resultados</InputLabel>
+                  <Select
+                    labelId="idioma-label"
+                    id="idioma"
+                    label="Linguagem de saída dos resultados"
+                    value={formData[field.stateKey] || ''}
+                    onChange={(e) => handleChange(e, field.stateKey)}
+                  >
+                    {languageOptions.map((option) => (
+                      <MenuItem key={option.code} value={option.code}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              );
+            } else {
+              return (
+                <TextField
+                  key={field.stateKey}
+                  fullWidth
+                  label={field.label}
+                  variant="outlined"
+                  value={formData[field.stateKey] || ''}
+                  onChange={(e) => handleChange(e, field.stateKey)}
+                  sx={{ mt: 2, mb: 2 }}
+                />
+              );
+            }
+          })}
+          <Button variant="contained" onClick={handleSaveChanges}>
+            Salvar Alterações
+          </Button>
+        </Box>
+      </Modal>
+    </Container>
+  </Box>
+  );
+};
+
+export default StepPage;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\TesteTable.jsx ###
+
+import React, { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import gfm from 'remark-gfm';
+import axios from 'axios'; // Assuming you're using axios for API calls
+import "./TestTable.css";
+
+const formData = {
+  title: "Aplicativo de Divisão de Contas",
+  beachHeadMarket: "Grupos de Amigos que Frequentam Restaurantes",
+  mercadosAdjacentes: "Famílias, Colegas de Trabalho, Eventos Corporativos",
+  linguagemResultados: "português",
+  description: "Um aplicativo que ajuda grupos de amigos a dividir a conta de restaurantes de maneira justa e eficiente."
+};
+
+const token = "eyJhbGciOiJIUzI1NiIsImtpZCI6InRaYUV4eDQrb0JjVHZDZGIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3ZyZ2JmenN2YnBocHh5Y3Ftem1qLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI4ODkyODhhOC00N2Q0LTRhNGQtYmZiMC0wZGQzNDQ0ZDIwZjYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzIxMTMzNDM2LCJpYXQiOjE3MjExMjk4MzYsImVtYWlsIjoiYnJlbm9yYW1vbjU1QGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJicmVub3JhbW9uNTVAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6Ijg4OTI4OGE4LTQ3ZDQtNGE0ZC1iZmIwLTBkZDM0NDRkMjBmNiJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzIxMTI5ODM2fV0sInNlc3Npb25faWQiOiI2ZTQxODg2NS01OTA2LTRkYjktODkxOS1mYjcxYmQwMDdhOGYiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.K47pQ92SvWRiIK6bDki_psrChHa7z95X-_onU8JlRz8";
+
+const TesteTable = () => {
+  const [tableStruct, setTableStruct] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+
+      try {
+        const response = await axios.post(`https://your-api-endpoint.com/passo/um`, formData, { headers, timeout: 60000 });
+        console.log("resposta", response.data.response);
+        const content = response.data.response || "resposta não encontrada";
+        console.log("aqui o conteudo", content);
+        setTableStruct(content);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <ReactMarkdown remarkPlugins={[gfm]}>{tableStruct}</ReactMarkdown>
+  );
+};
+
+export default TesteTable;
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\pages\TestTable.css ###
+
+table {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  border-collapse: collapse;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+  margin: 16px 0;
+}
+
+p {
+  margin: 16px 0;
+  display: block;
+}
+
+.container {
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+
+
+### C:\Users\lucassleitao\Desktop\lucia\lucia-front\src\services\api.js ###
+
+import axios from "axios"
+
+const api = axios.create({
+
+  baseURL: 'https://piai-back.vercel.app/',
+  //baseURL: 'http://localhost:4000/',
+   timeout: 60000,
+});
+
+
+
+export default api;
+
