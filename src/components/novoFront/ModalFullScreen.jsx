@@ -63,14 +63,14 @@ function ModalFullScreen({ setContent,showState, setShowState, content, step,num
     <Modal show={showState} fullscreen={true} onHide={() => setShowState(false)}>
       <Modal.Header closeButton>
         <Modal.Title style={{ display: 'flex', justifyContent: 'space-between', paddingRight: '4rem', width: '100vw' }}>
-          <span style={{color:"#83adb5"}}>LucIAf</span>
-          <Refresh
+          <span style={{color:"#83adb5"}}>LucIA</span>
+          {/* <Refresh
           onClick={helpMe}
       style={{ color: hover ? '#ff0000' : '#83adb5',cursor: hover ? "pointer": "auto" }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-    />
-          <Button variant="success" onClick={handleDownload}>Download PDF</Button>
+    /> */}
+          <Button variant="danger" onClick={handleDownload}>Download PDF</Button>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

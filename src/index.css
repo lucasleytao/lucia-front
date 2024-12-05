@@ -270,7 +270,7 @@ body{
 .formulario {
   background-position: bottom;
   background-size: cover;
-  background-image: url("../public/heroRegister.jpg");
+  /* background-image: url("../public/heroRegister.jpg"); */
   height: 100vh;
 }
 
@@ -346,7 +346,7 @@ body{
   .formulario {
     background-position: bottom;
     background-size: cover;
-    background-image: url("../public/heroRegister.jpg");
+    /* background-image: url("../public/heroRegister.jpg"); */
     display: none;
     height: 100vh;
   }

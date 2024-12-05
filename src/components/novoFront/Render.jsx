@@ -170,7 +170,7 @@ const Render = () => {
         <div style={{ display: "flex", justifyContent: "start" }}>
           <PaginationComponent />
         </div>
-        <button type="button" className="btn btn-warning btn-sm me-2" onClick={getOldResponses}><i class="fa-solid fa-list-check"></i> Respostas</button>
+        {/* <button type="button" className="btn btn-warning btn-sm me-2" onClick={getOldResponses}><i class="fa-solid fa-list-check"></i> Respostas</button> */}
       </div>
       <div className={styles.container}>
         <h5>{ideia ? `${ideia.title}` : " "}</h5>
@@ -203,12 +203,12 @@ const Render = () => {
       </div>
       <div className="p-3 d-flex justify-content-end btn-conf">
         <div>
-          <button type="button" className="btn btn-primary me-3 btn-lg" onClick={helpMe} disabled={loading}><i class="fa-regular fa-message"></i>
+          <button type="button" className="btn btn-danger me-3 btn-lg" onClick={helpMe} disabled={loading}><i class="fa-regular fa-message"></i>
             {loading ? <Spinner animation="border" /> : ' Me Ajude, Lucia'}
           </button>
-          <button type="button" className="btn btn-success me-3 btn-md" onClick={() => setModalShow2(true)}><i class="fa-regular fa-square-check"></i>
+          {/* <button type="button" className="btn btn-success me-3 btn-md" onClick={() => setModalShow2(true)}><i class="fa-regular fa-square-check"></i>
             {loading2 ? <Spinner animation="border" /> : " Atividade do Passo"}
-          </button>
+          </button> */}
 
         </div>
       </div>

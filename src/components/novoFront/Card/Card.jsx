@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card as BootstrapCard } from 'react-bootstrap';
-import styles from "./Card.module.css";
+// import styles from "./Card.module.css";
 import { LockKeyhole } from 'lucide-react';
 import Spinner from 'react-bootstrap/Spinner';
 
